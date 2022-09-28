@@ -1,12 +1,12 @@
-	PARTNO		U306 ;
+	PARTNO		U306;
 	NAME		U306 ;
-	DATE		July 9, 1992 ;
-	REV		0 ;
+	DATE		March 29, 1993 ;
+	REV		5 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
 	LOCATION	West Chester ;
-	DEVICE		p22v10 ;
+	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
@@ -21,21 +21,34 @@
 /*									*/
 /*	Device:		22V10-10					*/
 /*	Clock:		!CLK (33MHz)					*/
-/*	Unused:		11(I),13(I),18(I/O)				*/
+/*	Unused:		13(I)						*/
 /*									*/
 /************************************************************************/
 /*									*/
 /* REVISION HISTORY:							*/
 /*									*/
 /*	DBH Jul  9:	Original version.				*/
-/*									*/
+/*	DBH Oct 26:	The expansion FCS is now generated here.	*/
+/*	DBH Oct 26:	Reworked DTSYNC and STERM to free up AR for 	*/
+/*			use EFCS.					*/
+/*	DBH Oct 26:	Find the missing DTACK.  Fix to correct this.	*/
+/*	DBH Oct 28:	Changes here for a different FCS/DTACK strategy	*/
+/*			that makes the FCS shutoff delay independent of */
+/*			A3090 DTACK sampling.				*/
+/*	DBH Oct 29:	Changed above to also insure STERM is generated	*/
+/*			in slave mode, even at 25MHz.			*/
+/*	DBH Mar 29:	Stolen the unused BURST pin for NOZ3.  This	*/
+/*			is asserted to get the A4091 off the Zorro III	*/
+/*			bus quickly, even when its local FCS may still	*/
+/*			be active.  This is designed to fix the 	*/
+/*			multiple A4091 problem.				*/
 /************************************************************************/
 
 /** INPUTS: **/
 
 PIN 1		= !CLK		;	/* 33MHz system clock. */
 PIN 2		= !MYBUS	;	/* SCSI owns the Zorro III bus. */
-PIN 3		=  FCS		;	/* Zorro III cycle strobe. */
+PIN 3		=  BFCS		;	/* A3090 local Zorro III cycle strobe. */
 PIN 4		= !MTACK	;	/* Zorro III slave burst strobe. */
 PIN 5		= !CBREQ	;	/* SCSI burst request. */
 PIN 6		= !SCSI		;	/* SCSI slave chip select. */
@@ -43,77 +56,93 @@ PIN 7		= !EDTACK	;	/* Zorro III data acknowledge, on bus. */
 PIN 8		= !ABOEH	;	/* High order address buffer enable. */
 PIN 9		= !BERR		;	/* Zorro III bus error. */
 PIN 10		= !RST		;	/* Zorro III reset. */
+PIN 11		= !ASQ		;	/* Clocked and qualified SCSI strobe. */
 
 /** OUTPUTS: **/
 
 PIN 14		= !BDTACK	;	/* Zorro III data acknowledge, buffered. */
 PIN 16		= !STERM	;	/* SCSI termination. */
-PIN 17		= !BURST	;	/* This cycle will be a burst cycle. */
+PIN 17		= !NOZ3		;	/* Stop driving Zorro III! */
+PIN 18		= !EFCS		;	/* Zorro III cycle strobe for DMA. */
 PIN 19		=  DOE		;	/* Zorro III data ouput enable. */
 PIN 21		= !MTCR		;	/* Zorro III multiple transfer strobe. */
-PIN 22		= !LASTBURST	;	/* Zorro III end-of-burst indicator. */
 PIN 23		= !CBACK	;	/* SCSI burst acknowledge. */
 
 /** USED INTERNALLY: **/
 
-PIN 15		= !DTSYNC	;	/* Synchronizer for DTACK->STERM. */
-PIN 20		= !DCNT		;	/* State bit for Zorro III stuff. */
-
+PIN 15		= !DCNT		;	/* State bit for Zorro III stuff. */
+PIN 20		= !DTSYNC	;	/* Synchronizer for DTACK->STERM. */
+PIN 22		= !CYCZ3	;	/* On-bus Zorro III cycle. */
 
 /** OUTPUT TERMS: **/
+
+/* The Zorro III cycle starts on-bus as soon as it's certain to be a real
+   cycle that's starting.  If just starting, the buffered FCS isn't 
+   asserted but ASQ is. Once on, it stays on until a DTACK is properly
+   noticed. */
+
+CYCZ3		= !RST & MYBUS & !BFCS & ASQ & !BDTACK & !CLK
+		# !RST & MYBUS & CYCZ3 & ASQ & !BDTACK;
+
+/* The master-mode FCS is asserted onto the bus once we have determined
+   a real out-to-bus Zorro III cycle should take place.  This wasn't
+   originally clocked out, but I got nervous about ABOEH setup. */
+
+EFCS		=   CLK & MYBUS & CYCZ3 & !RST
+		#  EFCS & MYBUS & CYCZ3 & !RST;
+EFCS.OE		= MYBUS & CYCZ3;
+
+/* Get off the Zorro III bus right after the EFCS cycle ends, hold it
+   until the local cycle ends. */
+
+NOZ3		= MYBUS & BFCS & !CYCZ3
+		# RST;
 
 /* The data output enable has to wait until a safe "data phase".  This is 
    guaranteed to be two clocks after FCS falls.  DCNT is used to time
    this from cycle's start. */
 
-DOE.D		= FCS & !DOE & MYBUS & DCNT
-		# FCS &  DOE;
+DOE.D		= BFCS & !RST & !DOE & MYBUS & DCNT
+		# BFCS & !RST &  DOE;
 DOE.OE		= MYBUS;
-DOE.AR		= RST;
 
-/* This form FCS, to ensure proper DOE assertion. */
+/* This is a count phase from FCS, to ensure proper DOE assertion. */
 
-DCNT.D		= FCS & !DOE & !DCNT & MYBUS
-		# FCS & DCNT;
-DCNT.AR		= RST;
+DCNT.D		= BFCS & !DOE & !DCNT & MYBUS
+		# BFCS & DCNT;
 
-/* This signal samples an incoming DTACK, to help out with STERM
-   generation. */
+/* This signal samples a termination signal.  It used to sample EDTACK, but
+   the quick turnoff of EFCS means that EDTACK may be gone before our sampling
+   edge comes around.  Instead, the state where EFCS is negated but BFCS is
+   asserted indicates that the EFCS logic has detected EDTACK. */
 
-DTSYNC.D	= FCS &  DOE &  !BURST & EDTACK
-		# FCS &  DOE &   BURST & EDTACK & MTCR;
-DTSYNC.AR	= RST;
+DTSYNC.D	= BFCS & !RST & DOE & BDTACK
+		# BFCS & !RST & DOE & DTSYNC;
+DTSYNC.AR	= !BFCS;
 
-/* The SCSI termination is based on a synchronized DTACK.  I actually 
+/* The SCSI termination is based on a synchronized DTACK.  I 
    synchronize DTACK for either slave or master cycle, since the 
    NCR 53C710 wants the effect of SLACK (which makes a DTACK on slave
    to SCSI cycles) reflected on STERM to actually end the cycle. */
 
-STERM.D		= DTSYNC & EDTACK & FCS & !BURST
-		# DTSYNC & !STERM & FCS &  BURST & MTCR;
-STERM.AR	= RST;
+STERM.D		= !RST &  MYBUS & BFCS & DTSYNC & !STERM & BDTACK
+		# !RST & !MYBUS & BFCS & BDTACK & !STERM;
+STERM.AR	= !BFCS;
 
-/* The SCSI chips gets a CBACK any time we have an MTACK. */
+/* We _never_ issue a CBACK, since BURST isn't supported. */
 
-CBACK		= MYBUS & FCS & MTACK;
-CBACK.OE	= MYBUS;
-
-/* The burst cycle is based on the burst handshaking between Zorro III and
-   the SCSI chip.  This has to be done by DOE time. */
-
-BURST		= MYBUS & MTACK & FCS & CBACK & !DOE
-		# MYBUS & BURST & FCS;
-
-LASTBURST	= MYBUS &     BURST & !MTACK & MTCR
-		# MYBUS & LASTBURST & FCS;
+CBACK		= 'b'0;
+CBACK.OE	= 'b'0;
 		
-/* The burst strobe is generated for any burst cycle
+/* We _never_ issue an MTCR, since BURST isn't supported. */
 
-MTCR.D		= MYBUS & FCS & BURST & DOE & !STERM & !LASTBURST
-		# MYBUS & FCS & BURST & DOE & !STERM &  MTCR;
-MTCR.AR		= RST;
+MTCR		= 'b'0;
+MTCR.OE		= 'b'0;
 
-/* The DTACK line is buffered into the rest of the board. */
+/* The DTACK line is buffered into the rest of the board.  It actually
+   latches the EDTACK line in various ways, since EDTACK isn't necessarily
+   going to hang around long enough to be sampled. */
 
-BDTACK		= EDTACK;
+BDTACK		= !RST & BFCS & EDTACK
+		# !RST & BFCS & BDTACK & !STERM;
 
