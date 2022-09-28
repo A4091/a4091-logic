@@ -1,0 +1,151 @@
+LISTING FOR LOGIC DESCRIPTION FILE: u205.pld                         Page 1
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:41:33 1980
+
+  1:        PARTNO          U205 ;
+  2:        NAME            U205 ;
+  3:        DATE            July 8, 1992 ;
+  4:        REV             0 ;
+  5:        DESIGNER        Dave Haynie ;
+  6:        COMPANY         Commodore ;
+  7:        ASSEMBLY        A3090 ;
+  8:        LOCATION        West Chester ;
+  9:        DEVICE          p22v10 ;
+ 10:
+ 11:/************************************************************************/
+ 12:/*                                                                      */
+ 13:/*      A3090   Buffer and termination control.                         */
+ 14:/*                                                                      */
+ 15:/*      This device manages data buffer direction, enable, and latch    */
+ 16:/*      functions, address buffer enable, and slave cycle termination.  */
+ 17:/*                                                                      */
+ 18:/************************************************************************/
+ 19:/*                                                                      */
+ 20:/* DEVICE DATA:                                                         */
+ 21:/*                                                                      */
+ 22:/*      Device:         22V10-15                                        */
+ 23:/*      Clock:          CLK (33MHz)                                     */
+ 24:/*      Unused:         16(I/O)                                         */
+ 25:/*                                                                      */
+ 26:/************************************************************************/
+ 27:/*                                                                      */
+ 28:/* REVISION HISTORY:                                                    */
+ 29:/*                                                                      */
+ 30:/*      DBH Jul  8:     Original version.                               */
+ 31:/*                                                                      */
+ 32:/************************************************************************/
+ 33:
+ 34:/** INPUTS: **/
+ 35:
+ 36:PIN 1           =  CLK          ;       /* 33MHz system clock. */
+ 37:PIN 2           = !SLAVE        ;       /* Board select. */
+ 38:PIN 3           = !MYBUS        ;       /* The A3090 has the bus. */
+ 39:PIN 4           =  DOE          ;       /* Data phase on Zorro III. */
+ 40:PIN 5           =  FCS          ;       /* Z3 full cycle strobe. */
+ 41:PIN 6           =  READ         ;       /* The Zorro III read cycle. */
+ 42:PIN 7           = !SLACK        ;       /* The NCR 53C710 slave acknowledge. */
+ 43:PIN 8           = !BURST        ;       /* DMA Burst cycle? */
+ 44:PIN 9           = !INTREG       ;       /* Interrupt register access. */
+ 45:PIN 10          = !INTVEC       ;       /* Interrupt vector access. */
+ 46:PIN 11          = !CFGOUT       ;       /* Configuration chain output. */
+ 47:PIN 13          = !NACK         ;       /* Network chip acknowledge. */
+ 48:PIN 14          = !MTCR         ;       /* Zorro III burst strobe. */
+ 49:PIN 15          = !MASTER       ;       /* SCSI chip owns the A3090 bus. */
+ 50:
+ 51:/** OUTPUTS: **/
+ 52:
+ 53:PIN 18          = !D2Z          ;       /* Data is transferred to Zorro III bus. */
+
+LISTING FOR LOGIC DESCRIPTION FILE: u205.pld                         Page 2
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:41:33 1980
+
+ 54:PIN 19          = !Z2D          ;       /* Data is transferred from Zorro III bus. */
+ 55:PIN 20          = !DBLT         ;       /* Data is latched. */
+ 56:PIN 21          = !DBOE         ;       /* Data transfer enable. */
+ 57:PIN 22          = !ABOEL        ;       /* Low order address transfer enable. */
+ 58:PIN 23          = !ABOEH        ;       /* High order address transfer enable. */
+ 59:
+ 60:/** BIDIRECTIONALS: **/
+ 61:
+ 62:PIN 17          = !DTACK        ;       /* Zorro III termination. */
+ 63:
+ 64:/** OUTPUT TERMS: **/
+ 65:
+ 66:/* This is the data output enable control.  When data buffers are
+ 67:   pointed toward the board, they can turn on early in the cycle.
+ 68:   This is a write for slave access, a read for DMA access.  When
+ 69:   the data buffers are pointed out toward the bus, the have to 
+ 70:   wait until DOE to turn on; this is a slave read or DMA write. */
+ 71:
+ 72:DBOE            = !MYBUS & !READ & FCS & SLAVE
+ 73:                #  MYBUS &  READ & FCS
+ 74:                # !MYBUS &  READ & FCS & SLAVE & DOE
+ 75:                #  MYBUS & !READ & FCS & DOE;
+ 76:
+ 77:/* The data buffer direction calculations are very simple.  The data to
+ 78:   Zorro III connection is made for slave reads or DMA writes.  The Zorro III
+ 79:   to data bus connection is made for slave writes or DMA reads. */
+ 80:
+ 81:D2Z             = !MYBUS & !READ & FCS & SLAVE
+ 82:                #  MYBUS &  READ & FCS;
+ 83:
+ 84:Z2D             = !MYBUS &  READ & FCS & SLAVE
+ 85:                #  MYBUS & !READ & FCS;
+ 86:
+ 87:/* The data latching function is also reasonably simple.  For either kind of 
+ 88:   access, data is latched when DTACK is asserted and we're in data time.
+ 89:   For burst DMA access, we have to take into account MTCR and BURST as well. */
+ 90:
+ 91:DBLT            = !MYBUS & FCS & DTACK & DOE & SLAVE
+ 92:                #  MYBUS & FCS & DTACK & DOE & !BURST
+ 93:                #  MYBUS & FCS & DTACK & DOE &  BURST & MTCR;
+ 94:
+ 95:
+ 96:/* The address buffer controls.  I want addresses going in unless the SCSI
+ 97:   device has been granted the A3090 bus.  If so, addresses only go out when
+ 98:   the A3090 has been granted the Zorro III bus.  High order addresses also
+ 99:   go off very quickly after FCS is asserted. */
+100:
+101:ABOEL           = !MYBUS & !MASTER
+102:                #  MYBUS;
+103:
+104:ABOEH           = !MYBUS & !MASTER
+105:                #  MYBUS & !FCS;
+106:
+107:/* The board needs to generate a DTACK here for slave accesses.  Most
+
+LISTING FOR LOGIC DESCRIPTION FILE: u205.pld                         Page 3
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:41:33 1980
+
+108:   of the slave terminations are very simple, since they're either 
+109:   based on a termination signal (SLACK for SCSI, NACK for net or ROM)
+110:   or they're instant (interrupt vector R/W).  During configuration,
+111:   any write should also be instantly terminated, that would be a 
+112:   configuration register write (reads are governed by ROM access). */
+113:
+114:DTACK           = SLAVE & FCS & DOE & SLACK
+115:                # SLAVE & FCS & DOE & INTREG
+116:                # SLAVE & FCS & DOE & INTVEC
+117:                # SLAVE & FCS & DOE & NACK
+118:                # SLAVE & FCS & DOE & !CFGOUT & !READ
+119:                # SLAVE & FCS & DOE & DTACK;
+120:
+121:DTACK.OE        = SLAVE & FCS;
+122:
+123:
+
+
+
+Jedec Fuse Checksum       (9593)
+Jedec Transmit Checksum   (bf03)

@@ -1,0 +1,120 @@
+	PARTNO		U305 ;
+	NAME		U305 ;
+	DATE		July 9, 1992 ;
+	REV		0 ;
+	DESIGNER	Dave Haynie ;
+	COMPANY		Commodore ;
+	ASSEMBLY	A3090 ;
+	LOCATION	West Chester ;
+	DEVICE		p22v10 ;
+
+/************************************************************************/
+/*									*/
+/*	A3090	SCSI Master Interface					*/
+/*									*/
+/*	This device provides most of the Zorro III bus master interface */
+/*	to the NCR 53C710.						*/
+/*									*/
+/************************************************************************/
+/*									*/
+/* DEVICE DATA:								*/
+/*									*/
+/*	Device:		22V10-10					*/
+/*	Clock:		CLK (33MHz)					*/
+/*	Unused:		17(I/O)						*/
+/*									*/
+/************************************************************************/
+/*									*/
+/* REVISION HISTORY:							*/
+/*									*/
+/*	DBH Jul  9:	Original version.				*/
+/*									*/
+/************************************************************************/
+
+/** INPUTS: **/
+
+PIN 1		=  CLK		;	/* 33MHz system clock. */
+PIN 2		= !MYBUS	;	/* A3090 has the Zorro III bus. */
+PIN 3		= !AS		;	/* SCSI address strobe. */
+PIN 4		=  READ		;	/* The Zorro III read cycle. */
+PIN 5		=  SIZ1		;	/* SCSI transfer size. */
+PIN 6		=  SIZ0		;	
+PIN 7		= !BURST	;	/* This cycle will be a burst cycle. */
+PIN 8		= !MTCR		;	/* Zorro III multiple transfer strobe. */
+PIN 9		=  BA3		;	/* SCSI burst addresses. */
+PIN 10		=  BA2		;
+PIN 11		=  A1		;	/* SCSI sizing addresses. */
+PIN 13		=  A0		;
+PIN 23		=  DOE		;	/* Zorro III data ouput enable. */
+
+/** OUTPUTS: **/
+
+PIN 14		=  A2		;	/* Zorro III addresses. */
+PIN 15		=  A3		;
+PIN 16		=  BFCS		;	/* Buffered cycle strobe. */
+PIN 19		= !DS0		;	/* Zorro III data strobes. */
+PIN 20		= !DS1		;
+PIN 21		= !DS2		;
+PIN 22		= !DS3		;
+
+/** BIDIRECTIONALS: **/
+
+PIN 18		= !EFCS		;	/* Zorro III cycle strobe. */
+
+/** OUTPUT TERMS: **/
+
+/* The Zorro III cycle can start as soon as we have the bus and the
+   SCSI chip has started its cycle. */
+
+EFCS.D		= AS & MYBUS;
+EFCS.OE		= MYBUS;
+
+/* The buffered FCS is just EFCS, plain and simple. */
+
+BFCS		= EFCS;
+
+/* The data strobes are based on the low order address and size input
+   from the SCSI chip.  We don't turn these on until the A3090 is bus
+   master and it's data time.  The conversions are standard '030
+   style conversions. */
+
+DS3		= READ
+		# !A1 & !A0;
+
+DS2		= READ
+		# !A1 &               !SIZ0
+		# !A1 &  A0 
+		# !A1 &        SIZ1;
+
+DS1		= READ
+		# !A1 &       !SIZ1 & !SIZ0
+		# !A1 &        SIZ1 &  SIZ0
+		# !A1 &  A0 &         !SIZ0
+		#  A1 & !A0;
+
+DS0		= READ
+		#        A0 &  SIZ1 &  SIZ0
+		#             !SIZ1 & !SIZ0 
+		#  A1 &  A0
+		#  A1 &        SIZ1;
+
+[DS3..0].OE	= MYBUS & DOE;
+
+/* The burst addresses are done here.  When a cycle starts, BA2 and BA3
+   are directly routed to A2 and A3.  On successive burst cycles, these
+   two are incremented to provide the proper Zorro III address. */
+
+
+
+A2.D		= BA2 & !DOE
+		#  A2 & !BURST
+		#  A2 &  BURST & DOE &  MTCR
+		# !A2 &  BURST & DOE & !MTCR;
+
+A3.D		= BA3 & !DOE
+		#  A3 & !BURST
+		#  A3 &  BURST & DOE &  MTCR
+		# (A2 $ A3) & BURST & DOE & !MTCR;
+
+[A3,A2].OE	= MYBUS;
+

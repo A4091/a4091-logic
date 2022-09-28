@@ -1,0 +1,155 @@
+LISTING FOR LOGIC DESCRIPTION FILE: u305.pld.pld                     Page 1
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:53:19 1980
+
+  1:        PARTNO          U305 ;
+  2:        NAME            U305 ;
+  3:        DATE            July 9, 1992 ;
+  4:        REV             0 ;
+  5:        DESIGNER        Dave Haynie ;
+  6:        COMPANY         Commodore ;
+  7:        ASSEMBLY        A3090 ;
+  8:        LOCATION        West Chester ;
+  9:        DEVICE          p22v10 ;
+ 10:
+ 11:/************************************************************************/
+ 12:/*                                                                      */
+ 13:/*      A3090   SCSI Master Interface                                   */
+ 14:/*                                                                      */
+ 15:/*      This device provides most of the Zorro III bus master interface */
+ 16:/*      to the NCR 53C710.                                              */
+ 17:/*                                                                      */
+ 18:/************************************************************************/
+ 19:/*                                                                      */
+ 20:/* DEVICE DATA:                                                         */
+ 21:/*                                                                      */
+ 22:/*      Device:         22V10-10                                        */
+ 23:/*      Clock:          CLK (33MHz)                                     */
+ 24:/*      Unused:         17(I/O)                                         */
+ 25:/*                                                                      */
+ 26:/************************************************************************/
+ 27:/*                                                                      */
+ 28:/* REVISION HISTORY:                                                    */
+ 29:/*                                                                      */
+ 30:/*      DBH Jul  9:     Original version.                               */
+ 31:/*                                                                      */
+ 32:/************************************************************************/
+ 33:
+ 34:/** INPUTS: **/
+ 35:
+ 36:PIN 1           =  CLK          ;       /* 33MHz system clock. */
+ 37:PIN 2           = !MYBUS        ;       /* A3090 has the Zorro III bus. */
+ 38:PIN 3           = !AS           ;       /* SCSI address strobe. */
+ 39:PIN 4           =  READ         ;       /* The Zorro III read cycle. */
+ 40:PIN 5           =  SIZ1         ;       /* SCSI transfer size. */
+ 41:PIN 6           =  SIZ0         ;       
+ 42:PIN 7           = !BURST        ;       /* This cycle will be a burst cycle. */
+ 43:PIN 8           = !MTCR         ;       /* Zorro III multiple transfer strobe. */
+ 44:PIN 9           =  BA3          ;       /* SCSI burst addresses. */
+ 45:PIN 10          =  BA2          ;
+ 46:PIN 11          =  A1           ;       /* SCSI sizing addresses. */
+ 47:PIN 13          =  A0           ;
+ 48:PIN 23          =  DOE          ;       /* Zorro III data ouput enable. */
+ 49:
+ 50:/** OUTPUTS: **/
+ 51:
+ 52:PIN 14          =  A2           ;       /* Zorro III addresses. */
+ 53:PIN 15          =  A3           ;
+
+LISTING FOR LOGIC DESCRIPTION FILE: u305.pld.pld                     Page 2
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:53:19 1980
+
+ 54:PIN 16          =  BFCS         ;       /* Buffered cycle strobe. */
+ 55:PIN 19          = !DS0          ;       /* Zorro III data strobes. */
+ 56:PIN 20          = !DS1          ;
+ 57:PIN 21          = !DS2          ;
+ 58:PIN 22          = !DS3          ;
+ 59:
+ 60:/** BIDIRECTIONALS: **/
+ 61:
+ 62:PIN 18          = !EFCS         ;       /* Zorro III cycle strobe. */
+ 63:
+ 64:/** OUTPUT TERMS: **/
+ 65:
+ 66:/* The Zorro III cycle can start as soon as we have the bus and the
+ 67:   SCSI chip has started its cycle. */
+ 68:
+ 69:EFCS.D          = AS & MYBUS;
+ 70:EFCS.OE         = MYBUS;
+ 71:
+ 72:/* The buffered FCS is just EFCS, plain and simple. */
+ 73:
+ 74:BFCS            = EFCS;
+ 75:
+ 76:/* The data strobes are based on the low order address and size input
+ 77:   from the SCSI chip.  We don't turn these on until the A3090 is bus
+ 78:   master and it's data time.  The conversions are standard '030
+ 79:   style conversions. */
+ 80:
+ 81:DS3             = READ
+ 82:                # !A1 & !A0;
+ 83:
+ 84:DS2             = READ
+ 85:                # !A1 &               !SIZ0
+ 86:                # !A1 &  A0 
+ 87:                # !A1 &        SIZ1;
+ 88:
+ 89:DS1             = READ
+ 90:                # !A1 &       !SIZ1 & !SIZ0
+ 91:                # !A1 &        SIZ1 &  SIZ0
+ 92:                # !A1 &  A0 &         !SIZ0
+ 93:                #  A1 & !A0;
+ 94:
+ 95:DS0             = READ
+ 96:                #        A0 &  SIZ1 &  SIZ0
+ 97:                #             !SIZ1 & !SIZ0 
+ 98:                #  A1 &  A0
+ 99:                #  A1 &        SIZ1;
+100:
+101:[DS3..0].OE     = MYBUS & DOE;
+102:
+103:/* The burst addresses are done here.  When a cycle starts, BA2 and BA3
+104:   are directly routed to A2 and A3.  On successive burst cycles, these
+105:   two are incremented to provide the proper Zorro III address. */
+106:
+107:
+
+LISTING FOR LOGIC DESCRIPTION FILE: u305.pld.pld                     Page 3
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:53:19 1980
+
+108:
+109:A2.D            = BA2 & !DOE
+110:                #  A2 & !BURST
+111:                #  A2 &  BURST & DOE &  MTCR
+112:                # !A2 &  BURST & DOE & !MTCR;
+113:
+114:A3.D            = BA3 & !DOE
+115:                #  A3 & !BURST
+116:                #  A3 &  BURST & DOE &  MTCR
+117:                # (A2 $ A3) & BURST & DOE & !MTCR;
+118:
+119:[A3,A2].OE      = MYBUS;
+120:
+121:
+
+[0016cb] Please note: no expression assigned to:  A2.ar
+[0016cb] Please note: no expression assigned to:  A2.sp
+[0016cb] Please note: no expression assigned to:  A3.ar
+[0016cb] Please note: no expression assigned to:  A3.sp
+[0016cb] Please note: no expression assigned to:  EFCS.ar
+[0016cb] Please note: no expression assigned to:  EFCS.sp
+
+
+Jedec Fuse Checksum       (ba50)
+Jedec Transmit Checksum   (14f1)

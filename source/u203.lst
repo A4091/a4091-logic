@@ -1,0 +1,188 @@
+LISTING FOR LOGIC DESCRIPTION FILE: u203.pld                         Page 1
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:40:23 1980
+
+  1:        PARTNO          U203 ;
+  2:        NAME            U203 ;
+  3:        DATE            June 30, 1992 ;
+  4:        REV             0 ;
+  5:        DESIGNER        Dave Haynie ;
+  6:        COMPANY         Commodore ;
+  7:        ASSEMBLY        A3090 ;
+  8:        LOCATION        West Chester ;
+  9:        DEVICE          p22v10 ;
+ 10:
+ 11:/************************************************************************/
+ 12:/*                                                                      */
+ 13:/*      A3090   Device Mapper, Interrupt manager                        */
+ 14:/*                                                                      */
+ 15:/*      This device manages chip select decodes for various devices on  */
+ 16:/*      board.  Additionally, it helps supports the interrupt vector    */
+ 17:/*      response handshaking.                                           */
+ 18:/*                                                                      */
+ 19:/************************************************************************/
+ 20:/*                                                                      */
+ 21:/* DEVICE DATA:                                                         */
+ 22:/*                                                                      */
+ 23:/*      Device:         22V10-10                                        */
+ 24:/*      Clock:          NONE                                            */
+ 25:/*      Unused:         NONE                                            */
+ 26:/*                                                                      */
+ 27:/************************************************************************/
+ 28:/*                                                                      */
+ 29:/* REVISION HISTORY:                                                    */
+ 30:/*                                                                      */
+ 31:/*      DBH Jun 20:     Original version.                               */
+ 32:/*                                                                      */
+ 33:/************************************************************************/
+ 34:
+ 35:/** INPUTS: **/
+ 36:
+ 37:PIN 1           =  A23          ;       /* Addresses */
+ 38:PIN [2..4]      = [A19..17]     ;
+ 39:PIN 5           =  A1           ;       /* Real A1/Lock signal */
+ 40:PIN 6           = !INT          ;       /* Merged SCSI/Net interrupt. */
+ 41:PIN 7           =  READ         ;       /* Z3 read strobe. */
+ 42:PIN 8           = !DS0          ;       /* Z3 low order data strobe. */
+ 43:PIN 9           =  FC2          ;       /* Function code. */
+ 44:PIN 10          =  FCS          ;       /* Z3 full cycle strobe. */
+ 45:PIN 11          = !MTCR         ;       /* Z3 multiple transfer cycle strobe. */
+ 46:PIN 13          = !INTSPC       ;       /* Partially qualified interrupt space. */
+ 47:
+ 48:/** OUTPUTS: **/
+ 49:
+ 50:PIN 14          = !SID          ;       /* SCSI ID jumper access. */
+ 51:PIN 15          = !INT2         ;       /* Interrupt out to Z3 bus. */
+ 52:PIN 19          = !INTVEC       ;       /* An interrupt vector phase is signalled. */
+ 53:PIN 20          =  INTREG       ;       /* Interrupt register access. */
+
+LISTING FOR LOGIC DESCRIPTION FILE: u203.pld                         Page 2
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:40:23 1980
+
+ 54:PIN 21          = !ROM          ;       /* System ROM access. */
+ 55:PIN 22          = !SCSI         ;       /* SCSI Chip register access. */
+ 56:PIN 23          = !NET          ;       /* Network Chip register access. */
+ 57:
+ 58:/** BIDIRECTIONALS: **/
+ 59:
+ 60:PIN 17          = !SLAVE        ;       /* Slave for interrupt cycles. */
+ 61:
+ 62:/** USED INTERNALLY: **/
+ 63:
+ 64:PIN 16          = !INTSERV      ;       /* We're servicing this interrupt phase. */
+ 65:PIN 18          = !INTPOLL      ;       /* An interrupt polling phase is signalled. */
+ 66:
+ 67:/** INTERNAL TERMS: **/
+ 68:
+ 69:/* The addresses for decodes. */
+ 70:
+ 71:field addr      = [A23,A19..A17];
+ 72:
+ 73:/* The qualifier for CPU space access, basically, anything that isn't a possible
+ 74:   interrupt cycle. */
+ 75:
+ 76:cpucyc          = !(INTSPC & FC2);
+ 77:
+ 78:/* This interrupt cycle qualifier takes into account the partial qualifier and
+ 79:   the full interrupt address.  In reality, this should also look for A16 high,
+ 80:   but I didn't have enough pins after adding the ID register.  In practice, the
+ 81:   only CPU space type are breakpoint (0), coprocessor (2), and interrupt
+ 82:   acknowledge (f), so this is safe. */
+ 83:
+ 84:intcyc          = INTSPC & FC2 & A19 & A18 & A17 & !A1 & READ;
+ 85:
+ 86:/** OUTPUT TERMS: **/
+ 87:
+ 88:/* The basic configuration unit takes 16MB of space.  I slice it up based on A23,
+ 89:   A19..A17.  That's because, while the slicing is rather arbitrary, the interrupt
+ 90:   cycle decode needs A19..A17, so I use these for partitioning too.
+ 91:
+ 92:
+ 93:   8C0000       IDREG
+ 94:   880000       INTREG
+ 95:   840000       NET
+ 96:   800000       SCSI
+ 97:   000000       ROM   
+ 98:
+ 99:*/
+100:
+101:/* The ROM is selected for all reads before we're configured, for low reads after
+102:   configuration.  Since only lower memory is read during configuration, this
+103:   doesn't have to be any kind of special case. */
+104:
+105:ROM             = cpucyc & SLAVE & READ & addr:[7fffff..000000]
+106:                # ROM & SLAVE;
+107:
+
+LISTING FOR LOGIC DESCRIPTION FILE: u203.pld                         Page 3
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:40:23 1980
+
+108:/* SCSI and NET selects are very straight-forward. */
+109:
+110:SCSI            = cpucyc & SLAVE & addr:[83ffff..800000];
+111:
+112:NET             = cpucyc & SLAVE & addr:[87ffff..840000];
+113:
+114:/* The interrupt register select is actually a latching signal.  It should be 
+115:   asserted in interrupt register space only after data is valid, and only on
+116:   writes. */
+117:
+118:INTREG          = cpucyc & SLAVE & addr:[8bffff..880000] & DS0 & !READ;
+119:
+120:/* The SCSI ID register is a read-only register. */
+121:
+122:SID             = cpucyc & SLAVE & addr:[8fffff..8c0000] & READ;
+123:
+124:/* Whenever an interrupt comes in, I pass it out via a simulated open-collector
+125:   signal to the bus. */
+126:
+127:INT2            = 'b'1;
+128:INT2.OE         = INT;
+129:
+130:
+131:/* Should we be responding to an interrupt poll?  Only if the interrupt has been
+132:   locally generated.  This strobe indicates the start of a service condition.
+133:   It is negated once the POLL phase is complete.  Note that the INT signal is
+134:   designed to change only between Z3 cycles, which prevents an INTSERV condition
+135:   from being triggered should an interrupt just happen to come in while a poll
+136:   is being conducted. */
+137:
+138:INTSERV         = intcyc & INT & !FCS
+139:                # INTSERV & !INTPOLL
+140:                # INTSERV &  MTCR;
+141:
+142:/* A poll phase starts when we've established a service condition and MTCR falls.
+143:   This is held through the end of the cycle. */
+144:
+145:INTPOLL         = INTSERV & MTCR
+146:                # INTPOLL & FCS;
+147:
+148:/* A slave output is generated if we're established that the polling phase is 
+149:   being answered. */
+150:
+151:SLAVE           = 'b'1;
+152:SLAVE.OE        = INTPOLL & INTSERV;
+153:
+154:/* The vector phase is started in response to an answered polling condition. */
+155:
+156:INTVEC          = INTPOLL & MTCR & SLAVE & DS0;
+157:
+158:
+159:
+160:
+
+
+
+Jedec Fuse Checksum       (9760)
+Jedec Transmit Checksum   (e5be)

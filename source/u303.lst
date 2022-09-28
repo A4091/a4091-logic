@@ -1,0 +1,119 @@
+LISTING FOR LOGIC DESCRIPTION FILE: u303.pld                         Page 1
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:50:57 1980
+
+  1:        PARTNO          U303 ;
+  2:        NAME            U303 ;
+  3:        DATE            July 9, 1992 ;
+  4:        REV             0 ;
+  5:        DESIGNER        Dave Haynie ;
+  6:        COMPANY         Commodore ;
+  7:        ASSEMBLY        A3090 ;
+  8:        LOCATION        West Chester ;
+  9:        DEVICE          p22v10 ;
+ 10:
+ 11:/************************************************************************/
+ 12:/*                                                                      */
+ 13:/*      A3090   Zorro III/SCSI Arbiter                                  */
+ 14:/*                                                                      */
+ 15:/*      This device manages arbitration of the A3090 and Zorro III      */
+ 16:/*      buses.                                                          */
+ 17:/*                                                                      */
+ 18:/************************************************************************/
+ 19:/*                                                                      */
+ 20:/* DEVICE DATA:                                                         */
+ 21:/*                                                                      */
+ 22:/*      Device:         22V10-15                                        */
+ 23:/*      Clock:          C7M (33MHz)                                     */
+ 24:/*      Unused:         11(I),13(I),14(I/O),15(I/O),16(I/O),19(I/O)     */
+ 25:/*                                                                      */
+ 26:/************************************************************************/
+ 27:/*                                                                      */
+ 28:/* REVISION HISTORY:                                                    */
+ 29:/*                                                                      */
+ 30:/*      DBH Jul  9:     Original version.                               */
+ 31:/*                                                                      */
+ 32:/************************************************************************/
+ 33:
+ 34:/** INPUTS: **/
+ 35:
+ 36:PIN 1           =  C7M          ;       /* Zorro III arbiter clock. */
+ 37:PIN 2           = !MASTER       ;       /* SCSI owns the A3090 bus. */
+ 38:PIN 3           = !SBR          ;       /* SCSI bus request. */
+ 39:PIN 4           = !EBG          ;       /* Expansion bus grant. */
+ 40:PIN 5           =  FCS          ;       /* Zorro III cycle strobe. */
+ 41:PIN 6           = !SLAVE        ;       /* Zorro III slave response. */
+ 42:PIN 7           = !DTACK        ;       /* Zorro III bus termination. */
+ 43:PIN 8           = !BERR         ;       /* Zorro III bus error. */
+ 44:PIN 9           = !RST          ;       /* Zorro III reset. */
+ 45:PIN 10          =  CLK          ;       /* NCR 53C710 bus clock. */
+ 46:
+ 47:/** OUTPUTS: **/
+ 48:
+ 49:PIN 17          = !MYBUS        ;       /* A3090 owns the Zorro III bus. */
+ 50:PIN 18          = !SBG          ;       /* SCSI bus grant. */
+ 51:PIN 20          = !REGED        ;       /* A3090 is registered as a Zorro III master. */
+ 52:PIN 21          = !EBR          ;       /* Zorro III bus request. */
+ 53:PIN 23          =  BMASTER      ;       /* Buffered/inverted version of MASTER. */
+
+LISTING FOR LOGIC DESCRIPTION FILE: u303.pld                         Page 2
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:50:57 1980
+
+ 54:
+ 55:/** USED INTERNALLY: **/
+ 56:
+ 57:PIN 22          = !RCHNG        ;       /* Registration is changing. */
+ 58:
+ 59:/** OUTPUT TERMS: **/
+ 60:
+ 61:/* The SCSI chip can be given the A3090 bus as soon as there's no activity on it. 
+ 62:   Hold onto it until the SCSI becomes master. */
+ 63:
+ 64:SBG             = !FCS & !DTACK & !RST & SBR
+ 65:                #  SBG &  SBR
+ 66:                #  SBG & !MASTER;
+ 67:
+ 68:/* The Zorro III bus request is driven out on C7M high, for one C7M cycle, to
+ 69:   register for bus mastership.  When done, the same sequence relinquishes
+ 70:   registration.  The RCHNG signal indicated when a change is necessary. */
+ 71:
+ 72:EBR.D           = RCHNG & !EBR & !RST;
+ 73:EBR.AR          = RST;
+ 74:
+ 75:/* A change of registration is necessary whenever a SCSI request comes in 
+ 76:   and we're unregistered, or when the MASTER line is dropped and we are
+ 77:   registered. */
+ 78:
+ 79:RCNHG           = !REGED & SBR & !EBR
+ 80:                #  REGED & !MASTER & !EBR;
+ 81:
+ 82:/* Here's the actual registration indicator.  We're registered when EBR toggles,
+ 83:   unregistered the next time it toggles.  This can only change while EBR is low,
+ 84:   or in response to an error or reset condition. */
+ 85:
+ 86:REGED.D         = !REGED & EBR
+ 87:                #  REGED & !EBR & !RST;
+ 88:REGED.AR        = RST;
+ 89:
+ 90:/* The A3090 has the Zorro III bus only if its registered and it receives a grant.
+ 91:   It holds the bus until the grant is removed and the cycle ends. */
+ 92:
+ 93:MYBUS           = REGED & EBG
+ 94:                # MYBUS & FCS & !RST;
+ 95:
+ 96:
+ 97:
+
+[0016cb] Please note: no expression assigned to:  EBR.sp
+[0016cb] Please note: no expression assigned to:  REGED.sp
+
+
+Jedec Fuse Checksum       (433d)
+Jedec Transmit Checksum   (1181)

@@ -1,0 +1,181 @@
+LISTING FOR LOGIC DESCRIPTION FILE: u304.pld                         Page 1
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:52:37 1980
+
+  1:        PARTNO          U304 ;
+  2:        NAME            U304 ;
+  3:        DATE            July 8, 1992 ;
+  4:        REV             0 ;
+  5:        DESIGNER        Dave Haynie ;
+  6:        COMPANY         Commodore ;
+  7:        ASSEMBLY        A3090 ;
+  8:        LOCATION        West Chester ;
+  9:        DEVICE          p22v10 ;
+ 10:
+ 11:/************************************************************************/
+ 12:/*                                                                      */
+ 13:/*      A3090   SCSI Slave Interface                                    */
+ 14:/*                                                                      */
+ 15:/*      This device provides the Zorro III slave interface to the       */
+ 16:/*      NCR 53C710.                                                     */
+ 17:/*                                                                      */
+ 18:/************************************************************************/
+ 19:/*                                                                      */
+ 20:/* DEVICE DATA:                                                         */
+ 21:/*                                                                      */
+ 22:/*      Device:         22V10-10                                        */
+ 23:/*      Clock:          CLK (33MHz)                                     */
+ 24:/*      Unused:         10(I)                                           */
+ 25:/*                                                                      */
+ 26:/************************************************************************/
+ 27:/*                                                                      */
+ 28:/* REVISION HISTORY:                                                    */
+ 29:/*                                                                      */
+ 30:/*      DBH Jul  8:     Original version.                               */
+ 31:/*                                                                      */
+ 32:/************************************************************************/
+ 33:
+ 34:/** INPUTS: **/
+ 35:
+ 36:PIN 1           = !CLK          ;       /* 33MHz system clock. */
+ 37:PIN 2           = !SCSI         ;       /* SCSI chip select. */
+ 38:PIN 3           =  READ         ;       /* The Zorro III read cycle. */
+ 39:PIN 4           = !DS3          ;       /* Zorro III data strobes. */
+ 40:PIN 5           = !DS2          ;
+ 41:PIN 6           = !DS1          ;
+ 42:PIN 7           = !DS0          ;
+ 43:PIN 8           =  DOE          ;       /* Zorro III data ouput enable. */
+ 44:PIN 9           = !DTACK        ;       /* Zorro III Data transfer acknowledge. */
+ 45:PIN 11          =  A3           ;       /* Zorro III addresses. */
+ 46:PIN 13          =  A2           ;
+ 47:
+ 48:/** OUTPUTS: **/
+ 49:
+ 50:PIN 14          =  BA2          ;       /* SCSI burst addresses. */
+ 51:PIN 15          =  BA3          ;
+ 52:PIN 16          = !SREG         ;       /* SCSI register select. */
+ 53:PIN 17          = !DS           ;       /* SCSI data strobe. */
+
+LISTING FOR LOGIC DESCRIPTION FILE: u304.pld                         Page 2
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:52:37 1980
+
+ 54:PIN 18          = !AS           ;       /* SCSI address strobe. */
+ 55:PIN 20          =  SIZ0         ;       /* SCSI transfer size. */
+ 56:PIN 21          =  SIZ1         ;
+ 57:PIN 22          =  A0           ;       /* SCSI sizing addresses. */
+ 58:PIN 23          =  A1           ;
+ 59:
+ 60:/** USED INTERNALLY: **/
+ 61:
+ 62:PIN 19          = !SSYNC        ;       /* SCSI access synchronizer. */
+ 63:
+ 64:/** OUTPUT TERMS: **/
+ 65:
+ 66:/* The SCSI access cycle can begin as soon as we have a DOE.  First thing
+ 67:   to do is sync up to this. */
+ 68:
+ 69:SSYNC.D         = SCSI & DOE;
+ 70:
+ 71:/* The address strobe goes out directly based on the SCSI sync.  It's
+ 72:   tri-stated when there's no SCSI access. */
+ 73:
+ 74:AS.D            = SSYNC;
+ 75:AS.OE           = SCSI;
+ 76:
+ 77:/* The data strobe is based on whether its a read or write cycle. It's
+ 78:   tri-stated when there's no SCSI access. */
+ 79:
+ 80:DS.D            = SSYNC &  READ
+ 81:                #    AS & !READ;
+ 82:DS.OE           = SCSI;
+ 83:
+ 84:/* The SCSI chip select needs to be set up to the rising edge of the system
+ 85:   clock.  So its gated out with AS and CLK. */
+ 86:
+ 87:SREG            = AS & CLK
+ 88:                # AS & SREG;
+ 89:
+ 90:/* The "burst address" lines don't do any bursting during a slave access,
+ 91:   they're just bridged over. */
+ 92:
+ 93:BA3             = A3;
+ 94:BA3.OE          = SCSI;
+ 95:
+ 96:BA2             = A2;
+ 97:BA2.OE          = SCSI;
+ 98:
+ 99:/* Now we have the sizing calculations.  The Zorro III data strobes are
+100:   used to create 68030 style SIZ1, SIZ0, A1, and A0 lines.  Valid slave
+101:   mode transfer sizes are byte or longword only.  The translation table
+102:   used here is:
+103:
+104:        DS3     DS2     DS1     DS0     SIZ1    SIZ0    A1      A0
+105:
+106:*        0       0       0       0
+107:         0       0       0       1       0       1      1       1
+
+LISTING FOR LOGIC DESCRIPTION FILE: u304.pld                         Page 3
+
+CUPL: Universal Compiler for Programmable Logic
+Version 4.0a Serial# MD-40A-8380
+Copyright (C)  1983,1990 Logical Devices, Inc.
+Created Fri Jan 04 02:52:37 1980
+
+108:         0       0       1       0       0       1      1       0
+109:*        0       0       1       1
+110:         0       1       0       0       0       1      0       1
+111:*        0       1       0       1
+112:*        0       1       1       0
+113:*        0       1       1       1
+114:         1       0       0       0       0       1      0       0
+115:*        1       0       0       1
+116:*        1       0       1       0
+117:*        1       0       1       1
+118:*        1       1       0       0
+119:*        1       1       0       1
+120:*        1       1       1       0
+121:         1       1       1       1       0       0      0       0
+122:
+123:        * illegal/non-existant transfer
+124:
+125:   For reads, we'll always generate a longword read.  For writes,
+126:   it's either byte or longword, trouble if the software does the
+127:   wrong kind of write.
+128:*/
+129:        
+130:SIZ1            = 'b'0;
+131:SIZ1.OE         = SCSI & DOE;
+132:
+133:SIZ0            = !READ & !DS3 & !DS2 & !DS1 &  DS0
+134:                # !READ & !DS3 & !DS2 &  DS1 & !DS0
+135:                # !READ & !DS3 &  DS2 & !DS1 & !DS0
+136:                # !READ &  DS3 & !DS2 & !DS1 & !DS0;
+137:SIZ0.OE         = SCSI & DOE;
+138:
+139:A1              = !READ & !DS3 & !DS2 & !DS1 &  DS0
+140:                # !READ & !DS3 & !DS2 &  DS1 & !DS0;
+141:A1.OE           = SCSI & DOE;
+142:
+143:A0              = !READ & !DS3 & !DS2 & !DS1 &  DS0
+144:                # !READ & !DS3 &  DS2 & !DS1 & !DS0;
+145:A0.OE           = SCSI & DOE;
+146:
+147:
+
+[0016cb] Please note: no expression assigned to:  AS.ar
+[0016cb] Please note: no expression assigned to:  AS.sp
+[0016cb] Please note: no expression assigned to:  DS.ar
+[0016cb] Please note: no expression assigned to:  DS.sp
+[0016cb] Please note: no expression assigned to:  SSYNC.ar
+[0016cb] Please note: no expression assigned to:  SSYNC.sp
+
+
+Jedec Fuse Checksum       (8a5d)
+Jedec Transmit Checksum   (ce66)

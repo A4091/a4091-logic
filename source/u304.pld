@@ -1,0 +1,146 @@
+	PARTNO		U304 ;
+	NAME		U304 ;
+	DATE		July 8, 1992 ;
+	REV		0 ;
+	DESIGNER	Dave Haynie ;
+	COMPANY		Commodore ;
+	ASSEMBLY	A3090 ;
+	LOCATION	West Chester ;
+	DEVICE		p22v10 ;
+
+/************************************************************************/
+/*									*/
+/*	A3090	SCSI Slave Interface					*/
+/*									*/
+/*	This device provides the Zorro III slave interface to the 	*/
+/*	NCR 53C710.							*/
+/*									*/
+/************************************************************************/
+/*									*/
+/* DEVICE DATA:								*/
+/*									*/
+/*	Device:		22V10-10					*/
+/*	Clock:		CLK (33MHz)					*/
+/*	Unused:		10(I)						*/
+/*									*/
+/************************************************************************/
+/*									*/
+/* REVISION HISTORY:							*/
+/*									*/
+/*	DBH Jul  8:	Original version.				*/
+/*									*/
+/************************************************************************/
+
+/** INPUTS: **/
+
+PIN 1		= !CLK		;	/* 33MHz system clock. */
+PIN 2		= !SCSI		;	/* SCSI chip select. */
+PIN 3		=  READ		;	/* The Zorro III read cycle. */
+PIN 4		= !DS3		;	/* Zorro III data strobes. */
+PIN 5		= !DS2		;
+PIN 6		= !DS1		;
+PIN 7		= !DS0		;
+PIN 8		=  DOE		;	/* Zorro III data ouput enable. */
+PIN 9		= !DTACK	;	/* Zorro III Data transfer acknowledge. */
+PIN 11		=  A3		;	/* Zorro III addresses. */
+PIN 13		=  A2		;
+
+/** OUTPUTS: **/
+
+PIN 14		=  BA2		;	/* SCSI burst addresses. */
+PIN 15		=  BA3		;
+PIN 16		= !SREG		;	/* SCSI register select. */
+PIN 17		= !DS		;	/* SCSI data strobe. */
+PIN 18		= !AS		;	/* SCSI address strobe. */
+PIN 20		=  SIZ0		;	/* SCSI transfer size. */
+PIN 21		=  SIZ1		;
+PIN 22		=  A0		;	/* SCSI sizing addresses. */
+PIN 23		=  A1		;
+
+/** USED INTERNALLY: **/
+
+PIN 19		= !SSYNC	;	/* SCSI access synchronizer. */
+
+/** OUTPUT TERMS: **/
+
+/* The SCSI access cycle can begin as soon as we have a DOE.  First thing
+   to do is sync up to this. */
+
+SSYNC.D		= SCSI & DOE;
+
+/* The address strobe goes out directly based on the SCSI sync.  It's
+   tri-stated when there's no SCSI access. */
+
+AS.D		= SSYNC;
+AS.OE		= SCSI;
+
+/* The data strobe is based on whether its a read or write cycle. It's
+   tri-stated when there's no SCSI access. */
+
+DS.D		= SSYNC &  READ
+		#    AS & !READ;
+DS.OE		= SCSI;
+
+/* The SCSI chip select needs to be set up to the rising edge of the system
+   clock.  So its gated out with AS and CLK. */
+
+SREG		= AS & CLK
+		# AS & SREG;
+
+/* The "burst address" lines don't do any bursting during a slave access,
+   they're just bridged over. */
+
+BA3		= A3;
+BA3.OE		= SCSI;
+
+BA2		= A2;
+BA2.OE		= SCSI;
+
+/* Now we have the sizing calculations.  The Zorro III data strobes are
+   used to create 68030 style SIZ1, SIZ0, A1, and A0 lines.  Valid slave
+   mode transfer sizes are byte or longword only.  The translation table
+   used here is:
+
+	DS3	DS2	DS1	DS0	SIZ1	SIZ0	A1	A0
+
+*	 0	 0	 0	 0
+	 0	 0	 0	 1	 0	 1	1	1
+	 0	 0	 1	 0	 0	 1	1	0
+*	 0	 0	 1	 1
+	 0	 1	 0	 0	 0	 1	0	1
+*	 0	 1	 0	 1
+*	 0	 1	 1	 0
+*	 0	 1	 1	 1
+	 1	 0	 0	 0	 0	 1	0	0
+*	 1	 0	 0	 1
+*	 1	 0	 1	 0
+*	 1	 0	 1	 1
+*	 1	 1	 0	 0
+*	 1	 1	 0	 1
+*	 1	 1	 1	 0
+	 1	 1	 1	 1	 0	 0	0	0
+
+	* illegal/non-existant transfer
+
+   For reads, we'll always generate a longword read.  For writes,
+   it's either byte or longword, trouble if the software does the
+   wrong kind of write.
+*/
+	
+SIZ1		= 'b'0;
+SIZ1.OE		= SCSI & DOE;
+
+SIZ0		= !READ & !DS3 & !DS2 & !DS1 &  DS0
+		# !READ & !DS3 & !DS2 &  DS1 & !DS0
+		# !READ & !DS3 &  DS2 & !DS1 & !DS0
+		# !READ &  DS3 & !DS2 & !DS1 & !DS0;
+SIZ0.OE		= SCSI & DOE;
+
+A1		= !READ & !DS3 & !DS2 & !DS1 &  DS0
+		# !READ & !DS3 & !DS2 &  DS1 & !DS0;
+A1.OE		= SCSI & DOE;
+
+A0		= !READ & !DS3 & !DS2 & !DS1 &  DS0
+		# !READ & !DS3 &  DS2 & !DS1 & !DS0;
+A0.OE		= SCSI & DOE;
+

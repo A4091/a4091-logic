@@ -1,0 +1,107 @@
+	PARTNO		U202 ;
+	NAME		U202 ;
+	DATE		June 30, 1992 ;
+	REV		0 ;
+	DESIGNER	Dave Haynie ;
+	COMPANY		Commodore ;
+	ASSEMBLY	A3090 ;
+	LOCATION	West Chester ;
+	DEVICE		p22V10 ;
+
+/************************************************************************/
+/*									*/
+/*	A3090	AutoConfig						*/
+/*									*/
+/*	This device manages various aspects of autoconfiguration, along	*/
+/*	with some address decoding and Zorro III signal generation.	*/
+/*									*/
+/************************************************************************/
+/*									*/
+/* DEVICE DATA:								*/
+/*									*/
+/*	Device:		22V10-15					*/
+/*	Clock:		NONE						*/
+/*	Unused:		NONE						*/
+/*									*/
+/************************************************************************/
+/*									*/
+/* REVISION HISTORY:							*/
+/*									*/
+/*	DBH Jun 20:	Original version.				*/
+/*									*/
+/************************************************************************/
+
+/** INPUTS: **/
+
+PIN 1		= !MATCH	;	/* Address comparator match. */
+PIN [2..7]	=  [A6..1]	;	/* Low order address, A1 is really A8 */
+PIN 8		=  READ		;	/* Z3 read strobe. */
+PIN 9		= !DS3		;	/* Z3 high order data strobe. */
+PIN 10		=  FCS		;	/* Z3 full cycle strobe. */
+PIN 11		=  FC1		;	/* Function codes */
+PIN 13		=  FC0		;
+PIN 14		= !BERR		;	/* Bus error */
+PIN 15		= !CFGIN	;	/* Configuration chain input */
+PIN 16		=  RST		;	/* Z3 reset strobe. */
+PIN 17		= !SHUNT	;	/* Z2 configuration shunt. */
+
+/** OUTPUTS: **/
+
+PIN 18		= !CFGOUT	;	/* Configuration chain output */
+PIN 19		=  CFGLT	;	/* Configuration address latch */
+PIN 20		= !CINH		;	/* Z3 cache inhibit */
+PIN 22		= !SLAVE	;	/* Normal slave response to Z3 bus. */
+
+/** USED INTERNALLY: **/
+
+PIN 21		= !SLAVEOE	;	/* Slave output enable. */
+PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
+
+/** INTERNAL TERMS: **/
+
+/* Valid processor access space? */
+
+cpuspace	= FC0 & FC1;
+
+/* The low-order addresses. */
+
+field addr 	= [A6..A1];
+
+/** OUTPUT TERMS: **/
+
+/* The board configuration is really quite simple.  If there's a
+   write to the configuration register space, the configuration address
+   is latched and we pass configuration out.  If the system is shunted
+   (eg, in a Zorro II backplane), configuration out goes immediately. 
+   Note that the configuration read registers are actually supplied by 
+   the first part of the boot ROM. */
+
+CFGLT		= addr:44 & cpuspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST
+		# CFGLT & !RST;
+
+CFGOUT		= CFGLT & !RST & !FCS
+		# CFGOUT & !RST
+		# SHUNT;
+
+/* The slave signal is drive from here for any normal access.  When it isn't
+   being driven, it is tri-stated, since the interrupt response logic may 
+   also drive SLAVE.  */
+
+SLAVEOE		= CFGIN & MATCH & cpuspace & FCS & !RST;
+
+SLAVE		= 'b'1;
+SLAVE.OE	= SLAVEOE;
+
+/* The cache should be inhibited for any access to the board.  Actually, it
+   doesn't matter if we cache ROM, but there's no reason to since its not
+   execute-in-place ROM so no performance is lost making it uncached too. */
+
+CINH		= SLAVE;
+CINH.OE		= SLAVE;
+
+/* This signal partially qualifies the decode for interrupt response cycles.
+   We want to respond to INT2, of course in CPU space only.  The rest of
+   the decode takes place in U203, including the real A1. */
+
+INTSPC		= CFGIN & CFGOUT & FC0 & FC1 & !RST & !A3 & A2;
+
