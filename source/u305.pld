@@ -1,12 +1,12 @@
 	PARTNO		U305 ;
 	NAME		U305 ;
-	DATE		July 9, 1992 ;
-	REV		0 ;
+	DATE		November 2, 1992 ;
+	REV		2 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
 	LOCATION	West Chester ;
-	DEVICE		p22v10 ;
+	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
@@ -28,7 +28,10 @@
 /* REVISION HISTORY:							*/
 /*									*/
 /*	DBH Jul  9:	Original version.				*/
-/*									*/
+/*	DBH Oct 26:	Changes made to speed up Zorro III version of	*/
+/*			the FCS signal.					*/
+/*	DBH Nov  2:	Hold onto BFCS until AS goes away for slaves.	*/
+/*	COMPILE -M3							*/
 /************************************************************************/
 
 /** INPUTS: **/
@@ -45,6 +48,7 @@ PIN 9		=  BA3		;	/* SCSI burst addresses. */
 PIN 10		=  BA2		;
 PIN 11		=  A1		;	/* SCSI sizing addresses. */
 PIN 13		=  A0		;
+PIN 18		= !EFCS		;	/* Zorro III cycle strobe. */
 PIN 23		=  DOE		;	/* Zorro III data ouput enable. */
 
 /** OUTPUTS: **/
@@ -52,6 +56,7 @@ PIN 23		=  DOE		;	/* Zorro III data ouput enable. */
 PIN 14		=  A2		;	/* Zorro III addresses. */
 PIN 15		=  A3		;
 PIN 16		=  BFCS		;	/* Buffered cycle strobe. */
+PIN 17		= !ASQ		;	/* Qualified version of the SCSI AS* */
 PIN 19		= !DS0		;	/* Zorro III data strobes. */
 PIN 20		= !DS1		;
 PIN 21		= !DS2		;
@@ -59,19 +64,24 @@ PIN 22		= !DS3		;
 
 /** BIDIRECTIONALS: **/
 
-PIN 18		= !EFCS		;	/* Zorro III cycle strobe. */
 
 /** OUTPUT TERMS: **/
 
-/* The Zorro III cycle can start as soon as we have the bus and the
-   SCSI chip has started its cycle. */
+/* The buffered FCS depends on the mode.  In non-DMA modes, it's simply
+   based on the expansion FCS.  In DMA, the expansion FCS can go away
+   before the A3090 SCSI chip cycle is complete, so a latching term is 
+   added. */
 
-EFCS.D		= AS & MYBUS;
-EFCS.OE		= MYBUS;
+BFCS		= EFCS 
+		# BFCS & AS & ASQ & MYBUS
+		# BFCS & AS & !MYBUS;
 
-/* The buffered FCS is just EFCS, plain and simple. */
+/* A Zorro III cycle is started based on the start of a SCSI cycle and the
+   A3090's ownership of the Zorro III bus.  This is a qualifier for that
+   start. */
 
-BFCS		= EFCS;
+ASQ.D		= AS & MYBUS;
+ASQ.AR		= !MYBUS;
 
 /* The data strobes are based on the low order address and size input
    from the SCSI chip.  We don't turn these on until the A3090 is bus
@@ -104,15 +114,13 @@ DS0		= READ
    are directly routed to A2 and A3.  On successive burst cycles, these
    two are incremented to provide the proper Zorro III address. */
 
-
-
 A2.D		= BA2 & !DOE
-		#  A2 & !BURST
+		#  A2 & !BURST & DOE
 		#  A2 &  BURST & DOE &  MTCR
 		# !A2 &  BURST & DOE & !MTCR;
 
 A3.D		= BA3 & !DOE
-		#  A3 & !BURST
+		#  A3 & !BURST & DOE
 		#  A3 &  BURST & DOE &  MTCR
 		# (A2 $ A3) & BURST & DOE & !MTCR;
 

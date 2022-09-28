@@ -6,7 +6,7 @@
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
 	LOCATION	West Chester ;
-	DEVICE		p22v10 ;
+	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
@@ -44,6 +44,7 @@ PIN 9		=  FC2		;	/* Function code. */
 PIN 10		=  FCS		;	/* Z3 full cycle strobe. */
 PIN 11		= !MTCR		;	/* Z3 multiple transfer cycle strobe. */
 PIN 13		= !INTSPC	;	/* Partially qualified interrupt space. */
+PIN 23		= !RST		;	/* Reset. */
 
 /** OUTPUTS: **/
 
@@ -53,7 +54,6 @@ PIN 19		= !INTVEC	;	/* An interrupt vector phase is signalled. */
 PIN 20		=  INTREG	;	/* Interrupt register access. */
 PIN 21		= !ROM		;	/* System ROM access. */
 PIN 22		= !SCSI		;	/* SCSI Chip register access. */
-PIN 23		= !NET		;	/* Network Chip register access. */
 
 /** BIDIRECTIONALS: **/
 
@@ -92,8 +92,8 @@ intcyc		= INTSPC & FC2 & A19 & A18 & A17 & !A1 & READ;
 
    8C0000	IDREG
    880000	INTREG
-   840000	NET
-   800000	SCSI
+   840000	SCSI write
+   800000	SCSI read
    000000	ROM   
 
 */
@@ -107,9 +107,8 @@ ROM		= cpucyc & SLAVE & READ & addr:[7fffff..000000]
 
 /* SCSI and NET selects are very straight-forward. */
 
-SCSI		= cpucyc & SLAVE & addr:[83ffff..800000];
-
-NET		= cpucyc & SLAVE & addr:[87ffff..840000];
+SCSI		= cpucyc & SLAVE & addr:[83ffff..800000] & READ
+		# cpucyc & SLAVE & addr:[87ffff..840000] & !READ;
 
 /* The interrupt register select is actually a latching signal.  It should be 
    asserted in interrupt register space only after data is valid, and only on
@@ -136,7 +135,7 @@ INT2.OE		= INT;
    is being conducted. */
 
 INTSERV		= intcyc & INT & !FCS
-		# INTSERV & !INTPOLL
+		# INTSERV & !INTPOLL & !RST
 		# INTSERV &  MTCR;
 
 /* A poll phase starts when we've established a service condition and MTCR falls.
@@ -156,4 +155,4 @@ SLAVE.OE	= INTPOLL & INTSERV;
 INTVEC		= INTPOLL & MTCR & SLAVE & DS0;
 
 
-
+

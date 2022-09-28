@@ -6,7 +6,7 @@
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
 	LOCATION	West Chester ;
-	DEVICE		p22V10 ;
+	DEVICE		g22V10 ;
 
 /************************************************************************/
 /*									*/
@@ -42,7 +42,7 @@ PIN 11		=  FC1		;	/* Function codes */
 PIN 13		=  FC0		;
 PIN 14		= !BERR		;	/* Bus error */
 PIN 15		= !CFGIN	;	/* Configuration chain input */
-PIN 16		=  RST		;	/* Z3 reset strobe. */
+PIN 16		=  !RST		;	/* Z3 reset strobe. */
 PIN 17		= !SHUNT	;	/* Z2 configuration shunt. */
 
 /** OUTPUTS: **/
@@ -62,7 +62,7 @@ PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
 /* Valid processor access space? */
 
 cpuspace	= FC0 & FC1;
-
+dataspace 	= !FC1 & FC0;
 /* The low-order addresses. */
 
 field addr 	= [A6..A1];
@@ -76,7 +76,7 @@ field addr 	= [A6..A1];
    Note that the configuration read registers are actually supplied by 
    the first part of the boot ROM. */
 
-CFGLT		= addr:44 & cpuspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST
+CFGLT		= addr:44 & dataspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST
 		# CFGLT & !RST;
 
 CFGOUT		= CFGLT & !RST & !FCS
@@ -87,7 +87,7 @@ CFGOUT		= CFGLT & !RST & !FCS
    being driven, it is tri-stated, since the interrupt response logic may 
    also drive SLAVE.  */
 
-SLAVEOE		= CFGIN & MATCH & cpuspace & FCS & !RST;
+SLAVEOE		= CFGIN & MATCH & dataspace & FCS & !RST;
 
 SLAVE		= 'b'1;
 SLAVE.OE	= SLAVEOE;
@@ -104,4 +104,4 @@ CINH.OE		= SLAVE;
    the decode takes place in U203, including the real A1. */
 
 INTSPC		= CFGIN & CFGOUT & FC0 & FC1 & !RST & !A3 & A2;
-
+

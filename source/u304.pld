@@ -1,12 +1,12 @@
 	PARTNO		U304 ;
 	NAME		U304 ;
-	DATE		July 8, 1992 ;
-	REV		0 ;
+	DATE		October 29, 1992 ;
+	REV		1 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
 	LOCATION	West Chester ;
-	DEVICE		p22v10 ;
+	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
@@ -28,6 +28,8 @@
 /* REVISION HISTORY:							*/
 /*									*/
 /*	DBH Jul  8:	Original version.				*/
+/*	DBH Oct 29:	Changed SCSI start to consider data strobes,	*/
+/*			fixed SCSI chip select for setup time spec. 	*/
 /*									*/
 /************************************************************************/
 
@@ -42,6 +44,7 @@ PIN 6		= !DS1		;
 PIN 7		= !DS0		;
 PIN 8		=  DOE		;	/* Zorro III data ouput enable. */
 PIN 9		= !DTACK	;	/* Zorro III Data transfer acknowledge. */
+PIN 10		= !STERM	;	/* SCSI bus termination cycle. */
 PIN 11		=  A3		;	/* Zorro III addresses. */
 PIN 13		=  A2		;
 
@@ -63,28 +66,32 @@ PIN 19		= !SSYNC	;	/* SCSI access synchronizer. */
 
 /** OUTPUT TERMS: **/
 
-/* The SCSI access cycle can begin as soon as we have a DOE.  First thing
-   to do is sync up to this. */
+/* The SCSI access cycle begins as soon as we have a DOE and at least one 
+   data strobe.  First thing to do is sync up to this. */
 
-SSYNC.D		= SCSI & DOE;
+SSYNC.D		= SCSI & DOE & !STERM & DS3 
+		# SCSI & DOE & !STERM & DS2
+		# SCSI & DOE & !STERM & DS1
+		# SCSI & DOE & !STERM & DS0;
 
 /* The address strobe goes out directly based on the SCSI sync.  It's
    tri-stated when there's no SCSI access. */
 
-AS.D		= SSYNC;
+AS.D		= SSYNC & !STERM;
 AS.OE		= SCSI;
+AS.AR		= !DOE; /* added to stop small as glitch after cycle */
 
 /* The data strobe is based on whether its a read or write cycle. It's
    tri-stated when there's no SCSI access. */
 
-DS.D		= SSYNC &  READ
-		#    AS & !READ;
+DS.D		= SSYNC & !STERM &  READ
+		#    AS & !STERM & !READ;
 DS.OE		= SCSI;
 
 /* The SCSI chip select needs to be set up to the rising edge of the system
-   clock.  So its gated out with AS and CLK. */
+   clock.  So its gated out with AS and !CLK. */
 
-SREG		= AS & CLK
+SREG		= AS & !CLK
 		# AS & SREG;
 
 /* The "burst address" lines don't do any bursting during a slave access,

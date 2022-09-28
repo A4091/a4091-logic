@@ -6,7 +6,7 @@
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
 	LOCATION	West Chester ;
-	DEVICE		p22v10 ;
+	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
@@ -35,9 +35,6 @@
 /** INPUTS: **/
 
 PIN 1		=  CLK		;	/* 33MHz system clock. */
-PIN 2		= !NTXEN	;	/* Transmit enable from COM20020. */
-PIN 3		= !NINT		;	/* Network interrupt. */
-PIN 4		= !NET		;	/* Basic network chip select decode. */
 PIN 5		= !DS0		;	/* Low byte data strobe. */
 PIN 6		=  READ		;	/* Z3 READ signal. */
 PIN 7		= !RST		;	/* System reset signal. */
@@ -50,11 +47,8 @@ PIN 16		= !ROM		;	/* ROM select decode. */
 
 /** OUTPUTS: **/
 
-PIN 14		= !NDS		;	/* Network data strobe. */
-PIN 15		= !NCS		;	/* Network chip select. */
 PIN 20		= !NACK		;	/* Network data acknowledge. */
 PIN 22		= !INT		;	/* Interrupt output. */
-PIN 23		=  PTXEN	;	/* Transmit enable to RS-488 driver */
 
 /** USED INTERNALLY: **/
 
@@ -70,24 +64,18 @@ field state	= [NS2..0];
 
 /** OUTPUT TERMS: **/
 
-/* The transmit enable is just an inversion. */
-
-PTXEN		= NTXEN;
 
 /* The combined interrupt line is generated based on either of the
    device-specific interrupt lines.  It can only change between
    Zorro III cycles. */
 
-INT		= !FCS & NINT
-		# !FCS & SINT
-		#  INT & NINT
+INT		= !FCS & SINT
 		#  INT & SINT;
 
 /* This is a simple counter for network access states.  The state
    count starts based on network chip or ROM access. */
 
-NS0.D		= !RST & FCS & NCS & !NS0
-		# !RST & FCS & ROM & !NS0;
+NS0.D		= !RST & FCS & ROM & !NS0;
 
 NS1.D		= !RST & FCS & (NS0 $ NS1);
 
@@ -95,24 +83,6 @@ NS2.D		= !RST & FCS & ((NS0 & NS1) $ NS2);
 
 [NS2..0].AR	= RST;
 
-/* The actual network signals are very easy from here. The chip
-   select for the network chip is simply the first state after
-   the asynchronous NET select has been received. */
-
-NCS.D		= !RST & FCS & NET
-		# !RST & FCS & NCS;
-NCS.AR		=  RST;
-
-/* The network data strobe is driven based on the READ condition.
-   Check the required timing of this again in the COM20020 spec. 
-   I also toggle this puppy prior to configuration so that the
-   COM20020 has plenty of time to sense the kind of bus (Motorola
-   in this case, NDS and R/W get diddled at the same time). */
-
-NDS		=  READ & NCS
-		# !READ & state:1
-		#   NDS & FCS & !RST
-		# !CFGOUT & SLAVE;
 
 /* The termination signal is at least 200ns from the chip select 
    (again, verify the timing on this).  Since the clock is 33MHz,
@@ -121,8 +91,7 @@ NDS		=  READ & NCS
    other timed access on the board is the ROM response, that's
    done here too.  A 150ns ROM needs five clocks. */
 
-NACK		=  NET & state:7
-		#  ROM & state:5
+NACK		=  ROM & state:5
 		# NACK & FCS & !RST;
 
-
+
