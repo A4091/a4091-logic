@@ -75,6 +75,7 @@ SBG		= !FCS & !DTACK & !RST & SBR & EBG & !BLOCKBG
 */
 BLOCKBG		= MASTER
 		# BLOCKBG & REGED # BLOCKBG & EBG;
+
 /* The Zorro III bus request is driven out on C7M high, for one C7M cycle, to
    register for bus mastership.  When done, the same sequence relinquishes
    registration.  The RCHNG signal indicated when a change is necessary. */
@@ -90,6 +91,7 @@ RCHNG.D		= !REGED & SSBR & !EBR
 		#  REGED & !SMASTER & !EBR & DMASTER;
 DMASTER.D	= SMASTER;
 SMASTER.D	= MASTER;
+
 /* Here's the actual registration indicator.  We're registered when EBR toggles,
    unregistered the next time it toggles.  This can only change while EBR is low,
    or in response to an error or reset condition. */
@@ -109,6 +111,5 @@ MYBUS		= REGED & EBG
 
 SSBR.D		= SBR;
 
-
 BMASTER = MASTER;
-
+

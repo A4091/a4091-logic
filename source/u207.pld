@@ -1,7 +1,7 @@
 	PARTNO		U207 ;
 	NAME		U207 ;
-	DATE		July 1, 1992 ;
-	REV		0 ;
+	DATE		January 14, 1993 ;
+	REV		2 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
@@ -10,31 +10,33 @@
 
 /************************************************************************/
 /*									*/
-/*	A3090	Network chip control and interrupt mixer.		*/
+/*	A3090	ROM access timer and interrupt support.			*/
 /*									*/
-/*	This device manages assorted COM20020 functions and combines 	*/
-/*	interrupt signals from both this network device and the NCR	*/
-/* 	SCSI chip.							*/
+/*	This device counts clocks for ROM access timing and supports	*/
+/*	some of the interrupt munging.					*/
 /*									*/
 /************************************************************************/
 /*									*/
 /* DEVICE DATA:								*/
 /*									*/
 /*	Device:		22V10-15					*/
-/*	Clock:		CLK (33MHz)					*/
-/*	Unused:		21(I/O)						*/
+/*	Clock:		CLK (25MHz)					*/
+/*	Unused:		2(I),3(I),4(I),14(IO),21(IO)			*/
 /*									*/
 /************************************************************************/
 /*									*/
 /* REVISION HISTORY:							*/
 /*									*/
 /*	DBH Jul  1:	Original version.				*/
+/* 	DBH Nov 13:	Changed in support of the no-vector default.	*/
+/* 	DBH Nov 13:	Changed for 25MHz clock.			*/
+/*	DBH Jan 14:	Slowed ROM access so we can use cheap-ass ROM.	*/
 /*									*/
 /************************************************************************/
 
 /** INPUTS: **/
 
-PIN 1		=  CLK		;	/* 33MHz system clock. */
+PIN 1		=  CLK		;	/* 25MHz system clock. */
 PIN 5		= !DS0		;	/* Low byte data strobe. */
 PIN 6		=  READ		;	/* Z3 READ signal. */
 PIN 7		= !RST		;	/* System reset signal. */
@@ -47,12 +49,14 @@ PIN 16		= !ROM		;	/* ROM select decode. */
 
 /** OUTPUTS: **/
 
-PIN 20		= !NACK		;	/* Network data acknowledge. */
+PIN 20		= !NACK		;	/* Data acknowledge. */
 PIN 22		= !INT		;	/* Interrupt output. */
+PIN 23		= !INT2		;	/* Zorro bus interrupt 2. */
 
 /** USED INTERNALLY: **/
 
-PIN 17		= !NS2		;	/* Network chip cycle counter. */
+PIN 15		= !NS3		;	/* ROM access counter. */
+PIN 17		= !NS2		;
 PIN 18		= !NS1		;
 PIN 19		= !NS0		;
 
@@ -60,38 +64,52 @@ PIN 19		= !NS0		;
 
 /* The state vector */
 
-field state	= [NS2..0];
+field state	= [NS3..0];
+
+/* Start and continue terms. */
+
+startcnt	= ROM & FCS & !NACK;
+
+stopcnt		= !FCS
+		#  NACK;
 
 /** OUTPUT TERMS: **/
 
-
-/* The combined interrupt line is generated based on either of the
-   device-specific interrupt lines.  It can only change between
-   Zorro III cycles. */
+/* The interrupt process line is generated based on the SCSI interrupt. 
+   It can only change between Zorro III cycles. */
 
 INT		= !FCS & SINT
-		#  INT & SINT;
+		#  INT & SINT
+		#  FCS & INT;
 
-/* This is a simple counter for network access states.  The state
-   count starts based on network chip or ROM access. */
+/* The actual Zorro III bus interrupt is an open-drain version of
+   INT. */
 
-NS0.D		= !RST & FCS & ROM & !NS0;
+INT2		= 'b'1;
+INT2.OE		= INT;
 
-NS1.D		= !RST & FCS & (NS0 $ NS1);
+/* This is a simple counter for ROM access states.  The counter
+   resets itself once a termination is generated. */
 
-NS2.D		= !RST & FCS & ((NS0 & NS1) $ NS2);
+NS0.D		= !RST & startcnt & !NS0;
 
-[NS2..0].AR	= RST;
+NS1.D		= !RST & !stopcnt & NS0 & !NS1
+		# !RST & !stopcnt & !NS0 &  NS1;
 
+NS2.D		= !RST & !stopcnt &  NS0 &  NS1 & !NS2
+		# !RST & !stopcnt & !NS0 &         NS2
+		# !RST & !stopcnt &        !NS1 &  NS2;
 
-/* The termination signal is at least 200ns from the chip select 
-   (again, verify the timing on this).  Since the clock is 33MHz,
-   the states are roughly 30ns each, so we'll need to wait seven
-   states between NCS and the termination signal.  Since the only
-   other timed access on the board is the ROM response, that's
-   done here too.  A 150ns ROM needs five clocks. */
+NS3.D		= !RST & !stopcnt &  NS0 &  NS1 &  NS2 & !NS3
+		# !RST & !stopcnt &  NS3;
 
-NACK		=  ROM & state:5
+[NS3..0].AR	= RST;
+
+/* The ROM termination signal is set up to handle pretty much any kind
+   of ROM, since we only read the ROM for initialization.  Assuming a
+   cycle time of 400ns at 25MHz, we need to count 10 states. */
+
+NACK		=  ROM & state:a
 		# NACK & FCS & !RST;
-
-
+NACK.AR		= RST;
+

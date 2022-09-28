@@ -1,7 +1,7 @@
 	PARTNO		U203 ;
 	NAME		U203 ;
-	DATE		June 30, 1992 ;
-	REV		0 ;
+	DATE		November 13, 1992 ;
+	REV		1 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
 	ASSEMBLY	A3090 ;
@@ -29,6 +29,7 @@
 /* REVISION HISTORY:							*/
 /*									*/
 /*	DBH Jun 20:	Original version.				*/
+/*	DBH Nov 13:	Fixed interrupt no-vector default.		*/
 /*									*/
 /************************************************************************/
 
@@ -37,7 +38,7 @@
 PIN 1		=  A23		;	/* Addresses */
 PIN [2..4]	= [A19..17]	;
 PIN 5		=  A1		;	/* Real A1/Lock signal */
-PIN 6		= !INT		;	/* Merged SCSI/Net interrupt. */
+PIN 6		= !INT		;	/* We generated an interrupt */
 PIN 7		=  READ		;	/* Z3 read strobe. */
 PIN 8		= !DS0		;	/* Z3 low order data strobe. */
 PIN 9		=  FC2		;	/* Function code. */
@@ -49,7 +50,7 @@ PIN 23		= !RST		;	/* Reset. */
 /** OUTPUTS: **/
 
 PIN 14		= !SID		;	/* SCSI ID jumper access. */
-PIN 15		= !INT2		;	/* Interrupt out to Z3 bus. */
+PIN 15		= !INTASS	;	/* A vector has been assigned. */
 PIN 19		= !INTVEC	;	/* An interrupt vector phase is signalled. */
 PIN 20		=  INTREG	;	/* Interrupt register access. */
 PIN 21		= !ROM		;	/* System ROM access. */
@@ -79,7 +80,7 @@ cpucyc		= !(INTSPC & FC2);
    the full interrupt address.  In reality, this should also look for A16 high,
    but I didn't have enough pins after adding the ID register.  In practice, the
    only CPU space type are breakpoint (0), coprocessor (2), and interrupt
-   acknowledge (f), so this is safe. */
+   acknowledge (f), so this is safe.  */
 
 intcyc		= INTSPC & FC2 & A19 & A18 & A17 & !A1 & READ;
 
@@ -105,10 +106,11 @@ intcyc		= INTSPC & FC2 & A19 & A18 & A17 & !A1 & READ;
 ROM		= cpucyc & SLAVE & READ & addr:[7fffff..000000]
 		# ROM & SLAVE;
 
-/* SCSI and NET selects are very straight-forward. */
+/* SCSI and NET selects are very straight-forward.  AT LEAST two SCSI
+   images are defined here, it's probably reasonable to use the first
+   two only. */
 
-SCSI		= cpucyc & SLAVE & addr:[83ffff..800000] & READ
-		# cpucyc & SLAVE & addr:[87ffff..840000] & !READ;
+SCSI		= cpucyc & SLAVE & addr:[87ffff..800000];
 
 /* The interrupt register select is actually a latching signal.  It should be 
    asserted in interrupt register space only after data is valid, and only on
@@ -120,21 +122,23 @@ INTREG		= cpucyc & SLAVE & addr:[8bffff..880000] & DS0 & !READ;
 
 SID		= cpucyc & SLAVE & addr:[8fffff..8c0000] & READ;
 
-/* Whenever an interrupt comes in, I pass it out via a simulated open-collector
-   signal to the bus. */
+/* This is the interrupt assignment control.  We can't respond to quick
+   interrupt polling cycles until a vector has been assigned, by a write
+   to the interrupt register.  Once the vector register is written, we
+   use vectors until reset. */
 
-INT2		= 'b'1;
-INT2.OE		= INT;
-
+INTASS		= INTREG
+		# INTASS & !RST;
 
 /* Should we be responding to an interrupt poll?  Only if the interrupt has been
    locally generated.  This strobe indicates the start of a service condition.
    It is negated once the POLL phase is complete.  Note that the INT signal is
    designed to change only between Z3 cycles, which prevents an INTSERV condition
    from being triggered should an interrupt just happen to come in while a poll
-   is being conducted. */
+   is being conducted.  And of course, no interrupt service request should
+   take place until a vector has been assigned. */
 
-INTSERV		= intcyc & INT & !FCS
+INTSERV		= intcyc & INT & INTASS & !FCS
 		# INTSERV & !INTPOLL & !RST
 		# INTSERV &  MTCR;
 
@@ -155,4 +159,4 @@ SLAVE.OE	= INTPOLL & INTSERV;
 INTVEC		= INTPOLL & MTCR & SLAVE & DS0;
 
 
-
+
