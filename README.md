@@ -44,5 +44,6 @@ Empirically we have found out that there are subtle differences in pin-to-pin
 propagation delay (and possibly other differences).
 
 In our tests we have found that the card works most stable if you use a
-Lattice 22V10-6 or 22V10-7 for U306 and a Lattice 22V10-15 for U205
+Lattice 22V10-6 or 22V10-7 for U306 and a Lattice 22V10-15 for U205.
+All the remaining chips may be Atmel ATF22V10-10.
 
