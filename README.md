@@ -16,7 +16,7 @@ This project contains the GAL logic used on the A4091 board.
    You can install with wine, which is what we did.
  - Compile with:
    ```
-   $ cd sources
+   $ cd source
    $ ../jedec/build.sh
    ```
 
