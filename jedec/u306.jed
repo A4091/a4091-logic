@@ -1,7 +1,7 @@
 
-CUPL(WM)        5.0a  Serial# 60008009
+CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Fri Nov 19 17:07:05 2021
+Created         Fri Nov 11 20:56:54 2022
 Name            U306 
 Partno          391587-02
 Revision        5 
@@ -60,4 +60,4 @@ Location        West Chester
 *L05824 00010011001100111001001100010011
 *L05856 01010011100000110111001011010011
 *C8553
-*B582
+*B63C

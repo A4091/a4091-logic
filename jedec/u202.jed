@@ -1,7 +1,7 @@
 
-CUPL(WM)        5.0a  Serial# 60008009
+CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Thu Nov 11 18:04:00 2021
+Created         Fri Nov 11 20:56:54 2022
 Name            U202 
 Partno          U202 
 Revision        0 
@@ -46,4 +46,4 @@ Location        West Chester
 *L05824 01010101010100110010001100000011
 *L05856 00100010000000000000000000000000
 *C5290
-*470B
+*47C4
