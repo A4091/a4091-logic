@@ -125,6 +125,6 @@ DS0		= READ
 		#  A1 &  A0
 		#  A1 &        SIZ1;
 
-[DS3..0].OE	= MYBUS & DOE;
+[DS3..0].OE	= MYBUS & EFCS;
 
 
