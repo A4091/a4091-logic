@@ -72,8 +72,8 @@ field addr 	= [A6..A1];
 /* The board configuration is really quite simple.  If there's a
    write to the configuration register space, the configuration address
    is latched and we pass configuration out.  If the system is shunted
-   (eg, in a Zorro II backplane), configuration out goes immediately. 
-   Note that the configuration read registers are actually supplied by 
+   (eg, in a Zorro II backplane), configuration out goes immediately.
+   Note that the configuration read registers are actually supplied by
    the first part of the boot ROM. */
 
 CFGLT		= addr:44 & dataspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST
@@ -84,7 +84,7 @@ CFGOUT		= CFGLT & !RST & !FCS
 		# SHUNT;
 
 /* The slave signal is drive from here for any normal access.  When it isn't
-   being driven, it is tri-stated, since the interrupt response logic may 
+   being driven, it is tri-stated, since the interrupt response logic may
    also drive SLAVE.  */
 
 SLAVEOE		= CFGIN & MATCH & dataspace & FCS & !RST;

@@ -70,7 +70,7 @@ PIN 17		= !DTACK	;	/* Zorro III termination. */
 
 /** LOGICAL TERMS: **/
 
-/* It takes both MYBUS and MASTER to fully qualify a cycle.  If MYBUS is 
+/* It takes both MYBUS and MASTER to fully qualify a cycle.  If MYBUS is
    asserted but master not, we're in the process of bus arbitration.  If
    MASTER is asserted but not MYBUS, the SCSI chip is master of the A4091
    bus and waiting for a grant to the Zorro bus.  In both of these cases,
@@ -85,13 +85,13 @@ slavecyc	= !MYBUS & !MASTER;
 /* This is the data output enable control.  When data buffers are
    pointed toward the board, they can turn on early in the cycle.
    This is a write for slave access, a read for DMA access.  When
-   the data buffers are pointed out toward the bus, the have to 
-   wait until DOE to turn on; this is a slave read or DMA write. 
+   the data buffers are pointed out toward the bus, the have to
+   wait until DOE to turn on; this is a slave read or DMA write.
    When the board responds to itself, the buffers are left off.   If
-   the NOZ3 signal is asserted on a write (eg, master driving the 
+   the NOZ3 signal is asserted on a write (eg, master driving the
    Zorro III bus), DBOE must be negated immediately. */
 
-DBOE		=  slavecyc &  SLAVE & !READ & FCS 
+DBOE		=  slavecyc &  SLAVE & !READ & FCS
 		#  slavecyc &  SLAVE &  READ & FCS & DOE
 		# mastercyc & !SLAVE & !READ & FCS & DOE & !ABOEH & !NOZ3
 		# mastercyc & !SLAVE &  READ & FCS;
@@ -106,11 +106,11 @@ D2Z		=  slavecyc &  READ & FCS &  SLAVE
 Z2D		=   slavecyc & !READ & FCS &  SLAVE
 		#  mastercyc &  READ & FCS & !SLAVE;
 
-/* For either kind of access, data is latched when DTACK is asserted and 
+/* For either kind of access, data is latched when DTACK is asserted and
    we're in data time.  Data is held through the end of the cycle.  */
 
 DBLT		=  slavecyc & FCS & DTACK & DOE &  SLAVE
-		# mastercyc & FCS & DTACK & DOE & !SLAVE 
+		# mastercyc & FCS & DTACK & DOE & !SLAVE
 		#      DBLT & FCS;
 
 /* The address buffer controls.  I want addresses going in unless the SCSI
@@ -128,13 +128,13 @@ ABOEH.D		=  slavecyc
 ABOEH.AR	= NOZ3;
 
 /* The board needs to generate a DTACK here for slave accesses.  Most
-   of the slave terminations are very simple, since they're either 
+   of the slave terminations are very simple, since they're either
    based on a termination signal (SLACK for SCSI, NACK for net or ROM)
    or they're instant (interrupt vector R/W).  During configuration,
-   any write should also be instantly terminated, that would be a 
+   any write should also be instantly terminated, that would be a
    configuration register write (reads are governed by ROM access). */
 
-DTACK		= SLAVE & FCS & DOE & SLACK 
+DTACK		= SLAVE & FCS & DOE & SLACK
 		# SLAVE & FCS & DOE & INTREG
 		# SLAVE & FCS & DOE & INTVEC
 		# SLAVE & FCS & DOE & SID

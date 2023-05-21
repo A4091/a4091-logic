@@ -75,7 +75,7 @@ stopcnt		= !FCS
 
 /** OUTPUT TERMS: **/
 
-/* The interrupt process line is generated based on the SCSI interrupt. 
+/* The interrupt process line is generated based on the SCSI interrupt.
    It can only change between Zorro III cycles. */
 
 INT		= !FCS & SINT

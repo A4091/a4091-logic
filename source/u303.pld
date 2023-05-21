@@ -62,9 +62,9 @@ PIN 22		= !RCHNG	;	/* Registration is changing. */
 
 /** OUTPUT TERMS: **/
 
-/* The SCSI chip can be given the A3090 bus as soon as there's no activity on it. 
+/* The SCSI chip can be given the A3090 bus as soon as there's no activity on it.
    Hold onto it until the SCSI becomes master. */
-/* Not really if granted early the chip will have as asserted then fcs will 
+/* Not really if granted early the chip will have as asserted then fcs will
    assert and when the z bus is granted fcs and addr will assert a the same time */
 
 SBG		= !FCS & !DTACK & !RST & SBR & EBG & !BLOCKBG
@@ -83,7 +83,7 @@ BLOCKBG		= MASTER
 EBR.D		= RCHNG & !EBR & !RST;
 EBR.AR		= RST;
 
-/* A change of registration is necessary whenever a SCSI request comes in 
+/* A change of registration is necessary whenever a SCSI request comes in
    and we're unregistered, or when the MASTER line is dropped and we are
    registered. DMASTER is used to block regd & !master period at beginning*/
 

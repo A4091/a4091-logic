@@ -95,7 +95,7 @@ intcyc		= INTSPC & FC2 & A19 & A18 & A17 & !A1 & READ;
    880000	INTREG
    840000	SCSI write
    800000	SCSI read
-   000000	ROM   
+   000000	ROM
 
 */
 
@@ -112,7 +112,7 @@ ROM		= cpucyc & SLAVE & READ & addr:[7fffff..000000]
 
 SCSI		= cpucyc & SLAVE & addr:[87ffff..800000];
 
-/* The interrupt register select is actually a latching signal.  It should be 
+/* The interrupt register select is actually a latching signal.  It should be
    asserted in interrupt register space only after data is valid, and only on
    writes. */
 
@@ -148,7 +148,7 @@ INTSERV		= intcyc & INT & INTASS & !FCS
 INTPOLL		= INTSERV & MTCR
 		# INTPOLL & FCS;
 
-/* A slave output is generated if we're established that the polling phase is 
+/* A slave output is generated if we're established that the polling phase is
    being answered. */
 
 SLAVE		= 'b'1;
