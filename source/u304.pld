@@ -68,7 +68,7 @@ PIN 19		= !SSYNC	;	/* SCSI access synchronizer. */
 
 /** OUTPUT TERMS: **/
 
-/* The SCSI access cycle begins as soon as we have a DOE and at least one 
+/* The SCSI access cycle begins as soon as we have a DOE and at least one
    data strobe.  First thing to do is sync up to this. */
 
 SSYNC.D		= SCSI & DOE & !STERM & DS3 & !MYBUS
@@ -91,10 +91,10 @@ DS.D		= SSYNC & !STERM &  READ
 DS.OE		= SCSI & !MYBUS;
 
 /* The SCSI chip select needs to be set up to the rising edge of the system
-   clock.  So it's gated out with AS and !CLK.  During a DMA, the SCSI chip 
+   clock.  So it's gated out with AS and !CLK.  During a DMA, the SCSI chip
    select is just passed through. */
 
-SREG		=   AS & !MYBUS & !CLK 
+SREG		=   AS & !MYBUS & !CLK
 		#   AS & !MYBUS &  SREG
 		# SCSI &  MYBUS & !CLK;
 
@@ -114,7 +114,7 @@ BA2.OE		= SCSI & !MYBUS;
 
 	DS3	DS2	DS1	DS0	SIZ1	SIZ0	A1	A0
 
-*	 0	 0	 0	 0       
+*	 0	 0	 0	 0
 	 0	 0	 0	 1	 0	 1	1	1
 	 0	 0	 1	 0	 0	 1	1	0
 *	 0	 0	 1	 1
@@ -137,7 +137,7 @@ BA2.OE		= SCSI & !MYBUS;
    it's either byte or longword, trouble if the software does the
    wrong kind of write.
 */
-	
+
 SIZ1		= !DS3 & !DS2 &  DS1 &  DS0
 		# !DS3 &  DS2 &  DS1 & !DS0
 		# !DS3 &  DS2 &  DS1 &  DS0

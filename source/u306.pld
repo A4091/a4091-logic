@@ -77,7 +77,7 @@ PIN 22		= !CYCZ3	;	/* On-bus Zorro III cycle. */
 /** OUTPUT TERMS: **/
 
 /* The Zorro III cycle starts on-bus as soon as it's certain to be a real
-   cycle that's starting.  If just starting, the buffered FCS isn't 
+   cycle that's starting.  If just starting, the buffered FCS isn't
    asserted but ASQ is. Once on, it stays on until a DTACK is properly
    noticed. */
 
@@ -98,7 +98,7 @@ EFCS.OE		= MYBUS & CYCZ3;
 NOZ3		= MYBUS & BFCS & !CYCZ3
 		# RST;
 
-/* The data output enable has to wait until a safe "data phase".  This is 
+/* The data output enable has to wait until a safe "data phase".  This is
    guaranteed to be two clocks after FCS falls.  DCNT is used to time
    this from cycle's start. */
 
@@ -120,8 +120,8 @@ DTSYNC.D	= BFCS & !RST & DOE & BDTACK
 		# BFCS & !RST & DOE & DTSYNC;
 DTSYNC.AR	= !BFCS;
 
-/* The SCSI termination is based on a synchronized DTACK.  I 
-   synchronize DTACK for either slave or master cycle, since the 
+/* The SCSI termination is based on a synchronized DTACK.  I
+   synchronize DTACK for either slave or master cycle, since the
    NCR 53C710 wants the effect of SLACK (which makes a DTACK on slave
    to SCSI cycles) reflected on STERM to actually end the cycle. */
 
@@ -133,7 +133,7 @@ STERM.AR	= !BFCS;
 
 CBACK		= 'b'0;
 CBACK.OE	= 'b'0;
-		
+
 /* We _never_ issue an MTCR, since BURST isn't supported. */
 
 MTCR		= 'b'0;
