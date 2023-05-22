@@ -137,7 +137,7 @@ CBACK.OE	= 'b'0;
 /* We _never_ issue an MTCR, since BURST isn't supported. */
 
 MTCR		= 'b'0;
-MTCR.OE		= 'b'0;
+MTCR.OE		= MYBUS & CYCZ3 & EFCS;
 
 /* The DTACK line is buffered into the rest of the board.  It actually
    latches the EDTACK line in various ways, since EDTACK isn't necessarily
