@@ -4,13 +4,13 @@
 	REV		6 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	SCSI Master Interface					*/
+/*	A4091	SCSI Master Interface					*/
 /*									*/
 /*	This device provides most of the Zorro III bus master interface */
 /*	to the NCR 53C710.						*/
@@ -21,7 +21,7 @@
 /*									*/
 /*	Device:		22V10-10					*/
 /*	Clock:		CLK (25MHz)					*/
-/*	Unused:		9(I),10(I),14(I/O),15(I/),17(I/O)		*/
+/*	Unused:		9(I),10(I),14(I/O),15(I/O)			*/
 /*									*/
 /************************************************************************/
 /*									*/
@@ -46,7 +46,7 @@
 /** INPUTS: **/
 
 PIN 1		=  CLK		;	/* 33MHz system clock. */
-PIN 2		= !MYBUS	;	/* A3090 has the Zorro III bus. */
+PIN 2		= !MYBUS	;	/* A4091 has the Zorro III bus. */
 PIN 3		= !AS		;	/* SCSI address strobe. */
 PIN 4		=  READ		;	/* The Zorro III read cycle. */
 PIN 5		=  SIZ1		;	/* SCSI transfer size. */
@@ -93,7 +93,7 @@ BFCS		= EFCS & !MYBUS & !AS
 		# BFCS &  MYBUS &  AS & ASQ;
 
 /* A Zorro III cycle is started based on the start of a SCSI cycle and the
-   A3090's ownership of the Zorro III bus.  This is a qualifier for that
+   A4091's ownership of the Zorro III bus.  This is a qualifier for that
    start. */
 
 ASQ.D		=  AS & !BFCS & !EFCS & MYBUS
@@ -101,7 +101,7 @@ ASQ.D		=  AS & !BFCS & !EFCS & MYBUS
 ASQ.AR		= !AS;
 
 /* The data strobes are based on the low order address and size input
-   from the SCSI chip.  We don't turn these on until the A3090 is bus
+   from the SCSI chip.  We don't turn these on until the A4091 is bus
    master and it's data time.  The conversions are standard '030
    style conversions. */
 

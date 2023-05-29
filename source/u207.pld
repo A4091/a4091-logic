@@ -1,16 +1,16 @@
-	PARTNO		U207 ;
+	PARTNO		381584-01 ;
 	NAME		U207 ;
 	DATE		January 14, 1993 ;
 	REV		2 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	ROM access timer and interrupt support.			*/
+/*	A4091	ROM access timer and interrupt support.			*/
 /*									*/
 /*	This device counts clocks for ROM access timing and supports	*/
 /*	some of the interrupt munging.					*/

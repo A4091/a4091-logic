@@ -1,16 +1,16 @@
-	PARTNO		U202 ;
+	PARTNO		391583-01 ;
 	NAME		U202 ;
 	DATE		June 30, 1992 ;
 	REV		0 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22V10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	AutoConfig						*/
+/*	A4091	AutoConfig						*/
 /*									*/
 /*	This device manages various aspects of autoconfiguration, along	*/
 /*	with some address decoding and Zorro III signal generation.	*/
@@ -51,11 +51,11 @@ PIN 18		= !CFGOUT	;	/* Configuration chain output */
 PIN 19		=  CFGLT	;	/* Configuration address latch */
 PIN 20		= !CINH		;	/* Z3 cache inhibit */
 PIN 22		= !SLAVE	;	/* Normal slave response to Z3 bus. */
+PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
 
 /** USED INTERNALLY: **/
 
 PIN 21		= !SLAVEOE	;	/* Slave output enable. */
-PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
 
 /** INTERNAL TERMS: **/
 

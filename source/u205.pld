@@ -21,7 +21,7 @@
 /*									*/
 /*	Device:		22V10-15					*/
 /*	Clock:		CLK (25MHz)					*/
-/*	Unused:		16(I/O)						*/
+/*	Unused:		NONE						*/
 /*									*/
 /************************************************************************/
 /*									*/
@@ -52,7 +52,7 @@ PIN 10		= !INTVEC	;	/* Interrupt vector access. */
 PIN 11		= !CFGOUT	;	/* Configuration chain output. */
 PIN 13		= !NACK		;	/* Network chip acknowledge. */
 PIN 14		= !MTCR		;	/* Zorro III burst strobe. */
-PIN 15		= !MASTER	;	/* SCSI chip owns the A3090 bus. */
+PIN 15		= !MASTER	;	/* SCSI chip owns the A4091 bus. */
 PIN 16		= !SID    	;	/* SCSI ID. */
 
 /** OUTPUTS: **/
@@ -114,8 +114,8 @@ DBLT		=  slavecyc & FCS & DTACK & DOE &  SLAVE
 		#      DBLT & FCS;
 
 /* The address buffer controls.  I want addresses going in unless the SCSI
-   device has been granted the A3090 bus.  If so, addresses only go out when
-   the A3090 has been granted the Zorro III bus.  High order addresses also
+   device has been granted the A4091 bus.  If so, addresses only go out when
+   the A4091 has been granted the Zorro III bus.  High order addresses also
    go off quickly after FCS is asserted. */
 
 ABOEL.D		=  slavecyc

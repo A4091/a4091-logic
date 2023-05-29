@@ -1,16 +1,16 @@
-	PARTNO		U304 ;
+	PARTNO		391588-01 ;
 	NAME		U304 ;
 	DATE		November 19, 1992 ;
 	REV		2 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	SCSI Slave Interface					*/
+/*	A4091	SCSI Slave Interface					*/
 /*									*/
 /*	This device provides the Zorro III slave interface to the 	*/
 /*	NCR 53C710.							*/
@@ -21,7 +21,7 @@
 /*									*/
 /*	Device:		22V10-10					*/
 /*	Clock:		CLK (25MHz)					*/
-/*	Unused:		NONE						*/
+/*	Unused:		14(I/O),15(I/O)					*/
 /*									*/
 /************************************************************************/
 /*									*/
@@ -31,7 +31,7 @@
 /*	DBH Oct 29:	Changed SCSI start to consider data strobes,	*/
 /*			fixed SCSI chip select for setup time spec. 	*/
 /*	DBH Nov 19:	Modified for self-reference (SCSI chip wants	*/
-/*			to DMA to itsself).
+/*			to DMA to itsself).                             */
 /*									*/
 /************************************************************************/
 
@@ -47,13 +47,11 @@ PIN 7		= !DS0		;
 PIN 8		=  DOE		;	/* Zorro III data ouput enable. */
 PIN 9		= !DTACK	;	/* Zorro III Data transfer acknowledge. */
 PIN 10		= !STERM	;	/* SCSI bus termination cycle. */
-PIN 11		= !MYBUS	;	/* A3090 is bus master. */
+PIN 11		= !MYBUS	;	/* A4091 is bus master. */
 PIN 13		=  A2		;	/* Zorro III addresses. */
 
 /** OUTPUTS: **/
 
-PIN 14		=  BA2		;	/* SCSI burst addresses. */
-PIN 15		=  BA3		;
 PIN 16		= !SREG		;	/* SCSI register select. */
 PIN 17		= !DS		;	/* SCSI data strobe. */
 PIN 18		= !AS		;	/* SCSI address strobe. */
@@ -97,15 +95,6 @@ DS.OE		= SCSI & !MYBUS;
 SREG		=   AS & !MYBUS & !CLK
 		#   AS & !MYBUS &  SREG
 		# SCSI &  MYBUS & !CLK;
-
-/* The "burst address" lines don't do any bursting during a slave access,
-   they're just bridged over. */
-
-BA3		= 'b'0;	/* 3-state this for self-reference workaround */
-BA3.OE		= 'b'0;
-
-BA2		= A2;
-BA2.OE		= SCSI & !MYBUS;
 
 /* Now we have the sizing calculations.  The Zorro III data strobes are
    used to create 68030 style SIZ1, SIZ0, A1, and A0 lines.  Valid slave
