@@ -4,13 +4,13 @@
 	REV		5 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	SCSI Burst Control					*/
+/*	A4091	SCSI Burst Control					*/
 /*									*/
 /*	This device manages burst and some other bits of NCR 53C710 to	*/
 /*	Zorro III bus translation.					*/
@@ -34,7 +34,7 @@
 /*	DBH Oct 26:	Find the missing DTACK.  Fix to correct this.	*/
 /*	DBH Oct 28:	Changes here for a different FCS/DTACK strategy	*/
 /*			that makes the FCS shutoff delay independent of */
-/*			A3090 DTACK sampling.				*/
+/*			A4091 DTACK sampling.				*/
 /*	DBH Oct 29:	Changed above to also insure STERM is generated	*/
 /*			in slave mode, even at 25MHz.			*/
 /*	DBH Mar 29:	Stolen the unused BURST pin for NOZ3.  This	*/
@@ -48,7 +48,7 @@
 
 PIN 1		= !CLK		;	/* 33MHz system clock. */
 PIN 2		= !MYBUS	;	/* SCSI owns the Zorro III bus. */
-PIN 3		=  BFCS		;	/* A3090 local Zorro III cycle strobe. */
+PIN 3		=  BFCS		;	/* A4091 local Zorro III cycle strobe. */
 PIN 4		= !MTACK	;	/* Zorro III slave burst strobe. */
 PIN 5		= !CBREQ	;	/* SCSI burst request. */
 PIN 6		= !SCSI		;	/* SCSI slave chip select. */

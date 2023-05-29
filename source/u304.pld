@@ -4,13 +4,13 @@
 	REV		2 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	SCSI Slave Interface					*/
+/*	A4091	SCSI Slave Interface					*/
 /*									*/
 /*	This device provides the Zorro III slave interface to the 	*/
 /*	NCR 53C710.							*/
@@ -47,7 +47,7 @@ PIN 7		= !DS0		;
 PIN 8		=  DOE		;	/* Zorro III data ouput enable. */
 PIN 9		= !DTACK	;	/* Zorro III Data transfer acknowledge. */
 PIN 10		= !STERM	;	/* SCSI bus termination cycle. */
-PIN 11		= !MYBUS	;	/* A3090 is bus master. */
+PIN 11		= !MYBUS	;	/* A4091 is bus master. */
 PIN 13		=  A2		;	/* Zorro III addresses. */
 
 /** OUTPUTS: **/
