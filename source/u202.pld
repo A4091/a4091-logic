@@ -51,11 +51,11 @@ PIN 18		= !CFGOUT	;	/* Configuration chain output */
 PIN 19		=  CFGLT	;	/* Configuration address latch */
 PIN 20		= !CINH		;	/* Z3 cache inhibit */
 PIN 22		= !SLAVE	;	/* Normal slave response to Z3 bus. */
+PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
 
 /** USED INTERNALLY: **/
 
 PIN 21		= !SLAVEOE	;	/* Slave output enable. */
-PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
 
 /** INTERNAL TERMS: **/
 

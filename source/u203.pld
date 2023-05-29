@@ -50,7 +50,6 @@ PIN 23		= !RST		;	/* Reset. */
 /** OUTPUTS: **/
 
 PIN 14		= !SID		;	/* SCSI ID jumper access. */
-PIN 15		= !INTASS	;	/* A vector has been assigned. */
 PIN 19		= !INTVEC	;	/* An interrupt vector phase is signalled. */
 PIN 20		=  INTREG	;	/* Interrupt register access. */
 PIN 21		= !ROM		;	/* System ROM access. */
@@ -62,6 +61,7 @@ PIN 17		= !SLAVE	;	/* Slave for interrupt cycles. */
 
 /** USED INTERNALLY: **/
 
+PIN 15		= !INTASS	;	/* A vector has been assigned. */
 PIN 16		= !INTSERV	;	/* We're servicing this interrupt phase. */
 PIN 18		= !INTPOLL	;	/* An interrupt polling phase is signalled. */
 
