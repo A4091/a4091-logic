@@ -1,7 +1,7 @@
 
 CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Fri Nov 11 20:56:54 2022
+Created         Sat May 20 21:50:39 2023
 Name            U207 
 Partno          U207 
 Revision        2 
@@ -55,4 +55,4 @@ Location        West Chester
 *L05824 00000101010100110010001100000011
 *L05856 01110010000000000000000000000000
 *C738C
-*8F79
+*8F73
