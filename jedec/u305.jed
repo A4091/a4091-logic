@@ -1,9 +1,9 @@
 
 CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Mon May 29 16:19:09 2023
+Created         Mon May 29 16:55:40 2023
 Name            U305 
-Partno          391586-02 
+Partno          391586-03 
 Revision        6 
 Date            April 5, 1993 
 Designer        Dave Haynie 
@@ -64,4 +64,4 @@ Location        West Chester
 *L05824 00000011001100111001001100010011
 *L05856 01010011100000110110001011010011
 *C9FCD
-*D597
+*D593
