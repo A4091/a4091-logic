@@ -1,7 +1,7 @@
 
 CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Mon May 22 00:01:57 2023
+Created         Mon May 22 00:02:34 2023
 Name            U306 
 Partno          391587-02
 Revision        5 
@@ -63,4 +63,4 @@ Location        West Chester
 *L05824 00010011001100111001001100010011
 *L05856 01010011100000110111001011010011
 *C8B2C
-*CD86
+*CD82
