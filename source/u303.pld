@@ -21,7 +21,7 @@
 /*									*/
 /*	Device:		22V10-15					*/
 /*	Clock:		C7M (33MHz)					*/
-/*	Unused:		11(I),13(I),14(I/O),15(I/O),16(I/O),19(I/O)	*/
+/*	Unused:		11(I),13(I)					*/
 /*									*/
 /************************************************************************/
 /*									*/
@@ -46,18 +46,18 @@ PIN 10		=  CLK		;	/* NCR 53C710 bus clock. */
 
 /** OUTPUTS: **/
 
-PIN 14		= SMASTER	;	/* synched master for fall edge */
-PIN 15		= BLOCKBG	;	/* after 1st sbg block till end */
-PIN 16		= DMASTER	;	/* MASTER DELAYED. */
 PIN 17		= !MYBUS	;	/* A4091 owns the Zorro III bus. */
 PIN 18		= !SBG		;	/* SCSI bus grant. */
-PIN 19		= SSBR		;	/* SYNCHED SCSI bus req. */
 PIN 20		= !REGED	;	/* A4091 is registered as a Zorro III master. */
 PIN 21		= !EBR		;	/* Zorro III bus request. */
 PIN 23		=  BMASTER	;	/* Buffered/inverted version of MASTER. */
 
 /** USED INTERNALLY: **/
 
+PIN 14		= SMASTER	;	/* synched master for fall edge */
+PIN 15		= BLOCKBG	;	/* after 1st sbg block till end */
+PIN 16		= DMASTER	;	/* MASTER DELAYED. */
+PIN 19		= SSBR		;	/* SYNCHED SCSI bus req. */
 PIN 22		= !RCHNG	;	/* Registration is changing. */
 
 /** OUTPUT TERMS: **/

@@ -21,7 +21,7 @@
 /*									*/
 /*	Device:		22V10-10					*/
 /*	Clock:		CLK (25MHz)					*/
-/*	Unused:		NONE						*/
+/*	Unused:		14(I/O),15(I/O)					*/
 /*									*/
 /************************************************************************/
 /*									*/
@@ -31,7 +31,7 @@
 /*	DBH Oct 29:	Changed SCSI start to consider data strobes,	*/
 /*			fixed SCSI chip select for setup time spec. 	*/
 /*	DBH Nov 19:	Modified for self-reference (SCSI chip wants	*/
-/*			to DMA to itsself).
+/*			to DMA to itsself).                             */
 /*									*/
 /************************************************************************/
 
@@ -52,8 +52,6 @@ PIN 13		=  A2		;	/* Zorro III addresses. */
 
 /** OUTPUTS: **/
 
-PIN 14		=  BA2		;	/* SCSI burst addresses. */
-PIN 15		=  BA3		;
 PIN 16		= !SREG		;	/* SCSI register select. */
 PIN 17		= !DS		;	/* SCSI data strobe. */
 PIN 18		= !AS		;	/* SCSI address strobe. */
@@ -97,15 +95,6 @@ DS.OE		= SCSI & !MYBUS;
 SREG		=   AS & !MYBUS & !CLK
 		#   AS & !MYBUS &  SREG
 		# SCSI &  MYBUS & !CLK;
-
-/* The "burst address" lines don't do any bursting during a slave access,
-   they're just bridged over. */
-
-BA3		= 'b'0;	/* 3-state this for self-reference workaround */
-BA3.OE		= 'b'0;
-
-BA2		= A2;
-BA2.OE		= SCSI & !MYBUS;
 
 /* Now we have the sizing calculations.  The Zorro III data strobes are
    used to create 68030 style SIZ1, SIZ0, A1, and A0 lines.  Valid slave
