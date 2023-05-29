@@ -1,14 +1,14 @@
 
 CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Fri Nov 11 20:56:54 2022
+Created         Mon May 29 16:06:26 2023
 Name            U303 
-Partno          U303 
+Partno          391585-01 
 Revision        0 
 Date            July 9, 1992 
 Designer        Dave Haynie 
 Company         Commodore 
-Assembly        A3090 
+Assembly        A4091 
 Location        West Chester 
 *QP24 
 *QF5892 
@@ -65,7 +65,7 @@ Location        West Chester
 *L05408 11111111101111111111111111111111
 *L05440 11111111111111110000000000000000
 *L05792 00000000000000001100000010010110
-*L05824 11100101010100110011001100000011
-*L05856 00110010000000000000000000000000
-*C94A4
-*F2EA
+*L05824 11100011001100111001001100010011
+*L05856 01010011100000110101001011010011
+*C971F
+*F3E6

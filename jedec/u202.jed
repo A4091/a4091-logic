@@ -1,14 +1,14 @@
 
 CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Fri Nov 11 20:56:54 2022
+Created         Mon May 29 16:06:26 2023
 Name            U202 
-Partno          U202 
+Partno          391583-01 
 Revision        0 
 Date            June 30, 1992 
 Designer        Dave Haynie 
 Company         Commodore 
-Assembly        A3090 
+Assembly        A4091 
 Location        West Chester 
 *QP24 
 *QF5892 
@@ -43,7 +43,7 @@ Location        West Chester
 *L03040 11111111111111111111111011111111
 *L03072 11111111000000000000000000000000
 *L05792 00000000000000000101010111010101
-*L05824 01010101010100110010001100000011
-*L05856 00100010000000000000000000000000
-*C5290
-*47C4
+*L05824 01010011001100111001001100010011
+*L05856 01010011100000110011001011010011
+*C551D
+*48CC
