@@ -8,12 +8,17 @@ OPT  = 1
 
 all: $(JED)
 
-clean:
-	rm -f $(JED)
-
-jedec/%.jed: source/%.pld Makefile
+jedec/%.jed: source/%.pld Makefile util/jedcrc
 	$(CUPL) -jm$(OPT) $(LIBCUPL) $<
 	mv $(<:source/u%.pld=source/U%.jed) $(<:source/%.pld=jedec/%.jed)
+	util/fixup_jed.sh $< $(<:source/%.pld=jedec/%.jed)
 
 jedec/u305.jed : OPT=3 # U305 says: COMPILE -M3
+
+util/jedcrc : util/jedcrc.c
+
+clean:
+	rm -f util/jedcrc
+distclean: clean
+	rm -f $(JED)
 
