@@ -4,13 +4,13 @@
 	REV		0 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22V10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	AutoConfig						*/
+/*	A4091	AutoConfig						*/
 /*									*/
 /*	This device manages various aspects of autoconfiguration, along	*/
 /*	with some address decoding and Zorro III signal generation.	*/

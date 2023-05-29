@@ -4,15 +4,15 @@
 	REV		0 ;
 	DESIGNER	Dave Haynie ;
 	COMPANY		Commodore ;
-	ASSEMBLY	A3090 ;
+	ASSEMBLY	A4091 ;
 	LOCATION	West Chester ;
 	DEVICE		g22v10 ;
 
 /************************************************************************/
 /*									*/
-/*	A3090	Zorro III/SCSI Arbiter					*/
+/*	A4091	Zorro III/SCSI Arbiter					*/
 /*									*/
-/*	This device manages arbitration of the A3090 and Zorro III 	*/
+/*	This device manages arbitration of the A4091 and Zorro III 	*/
 /*	buses.								*/
 /*									*/
 /************************************************************************/
@@ -34,7 +34,7 @@
 /** INPUTS: **/
 
 PIN 1		=  C7M		;	/* Zorro III arbiter clock. */
-PIN 2		= !MASTER	;	/* SCSI owns the A3090 bus. */
+PIN 2		= !MASTER	;	/* SCSI owns the A4091 bus. */
 PIN 3		= !SBR		;	/* SCSI bus request. */
 PIN 4		= !EBG		;	/* Expansion bus grant. */
 PIN 5		=  FCS		;	/* Zorro III cycle strobe. */
@@ -49,10 +49,10 @@ PIN 10		=  CLK		;	/* NCR 53C710 bus clock. */
 PIN 14		= SMASTER	;	/* synched master for fall edge */
 PIN 15		= BLOCKBG	;	/* after 1st sbg block till end */
 PIN 16		= DMASTER	;	/* MASTER DELAYED. */
-PIN 17		= !MYBUS	;	/* A3090 owns the Zorro III bus. */
+PIN 17		= !MYBUS	;	/* A4091 owns the Zorro III bus. */
 PIN 18		= !SBG		;	/* SCSI bus grant. */
 PIN 19		= SSBR		;	/* SYNCHED SCSI bus req. */
-PIN 20		= !REGED	;	/* A3090 is registered as a Zorro III master. */
+PIN 20		= !REGED	;	/* A4091 is registered as a Zorro III master. */
 PIN 21		= !EBR		;	/* Zorro III bus request. */
 PIN 23		=  BMASTER	;	/* Buffered/inverted version of MASTER. */
 
@@ -62,7 +62,7 @@ PIN 22		= !RCHNG	;	/* Registration is changing. */
 
 /** OUTPUT TERMS: **/
 
-/* The SCSI chip can be given the A3090 bus as soon as there's no activity on it.
+/* The SCSI chip can be given the A4091 bus as soon as there's no activity on it.
    Hold onto it until the SCSI becomes master. */
 /* Not really if granted early the chip will have as asserted then fcs will
    assert and when the z bus is granted fcs and addr will assert a the same time */
@@ -100,7 +100,7 @@ REGED.D		= !REGED & EBR
 		#  REGED & !EBR & !RST;
 REGED.AR	= RST;
 
-/* The A3090 has the Zorro III bus only if its registered and it receives a grant.
+/* The A4091 has the Zorro III bus only if its registered and it receives a grant.
    It holds the bus until the grant is removed and the cycle ends. */
 
 MYBUS		= REGED & EBG
