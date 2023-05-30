@@ -39,10 +39,23 @@ The original chips use the following timings
 During the bring-up of the first ReA4091 prototype we used all ATF22V10C-10
 chips. This lead to a non functional ReA4091. Also, using a mix of ATF22V10C-10
 and ATF22V10C-15 as described above did not yield the desired result.
-Empirically we have found out that there are subtle differences in pin-to-pin
+Atmel chips have pin-keeper circuits that can influence the signal quality,
+particularly if there are a lot of inputs hanging off an output signal, like
+in the case of DOE and MTCR. There are also subtle differences in pin-to-pin
 propagation delay (and possibly other differences).
 
-In our tests we have found that the card works most stable if you use a
-Lattice 22V10-6 or 22V10-7 for U306 and a Lattice 22V10-15 for U205.
-All the remaining chips may be Atmel ATF22V10-10.
+### Using the original logic files from the Dave Haynie Archive
+
+If you want to use the original files, you will have to use two Lattice chips
+in combination with 6 Atmel chips. In our tests we have found that the card works
+most stable if you use a Lattice 22V10-6 or 22V10-7 for U306 and a Lattice 22V10-15
+for U205. All the remaining chips should be Atmel ATF22V10-10.
+
+### Using the latest version of logic files
+
+When using the latest versions of the logic files in this repository, you
+should be fine when using all Atmel ATF22V10-10 parts.
+
+There will also be a speedup of approximately 14% over the original GAL set.
+
 
