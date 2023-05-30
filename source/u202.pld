@@ -1,4 +1,4 @@
-	PARTNO		391583-01 ;
+	PARTNO		391583-02 ;
 	NAME		U202 ;
 	DATE		June 30, 1992 ;
 	REV		0 ;
@@ -55,7 +55,7 @@ PIN 23		= !INTSPC	;	/* Partially qualified interrupt decode. */
 
 /** USED INTERNALLY: **/
 
-PIN 21		= !SLAVEOE	;	/* Slave output enable. */
+PIN 21		= !SHUTUP	;	/* Card is Shut up. */
 
 /** INTERNAL TERMS: **/
 
@@ -76,32 +76,50 @@ field addr 	= [A6..A1];
    Note that the configuration read registers are actually supplied by
    the first part of the boot ROM. */
 
-CFGLT		= addr:44 & dataspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST
+/* SHUTUP must block CFGLT */
+
+CFGLT		= addr:44 & dataspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST & !SHUTUP
 		# CFGLT & !RST;
 
+/* CFGOUT must be activated when board is SHUTUP so the next card in
+   the config chain can be addressed. */
+
 CFGOUT		= CFGLT & !RST & !FCS
+		# SHUTUP & !RST & !FCS
 		# CFGOUT & !RST
 		# SHUNT;
+
+/* A write to the SHUTUP address completely deactivates the board.
+   But only while not configured, so CFGLT must block SHUTUP */
+
+SHUTUP		= addr:4c & dataspace & FCS & !READ & CFGIN & DS3 & !BERR & !RST & !CFGLT
+		# SHUTUP & !RST;
 
 /* The slave signal is drive from here for any normal access.  When it isn't
    being driven, it is tri-stated, since the interrupt response logic may
    also drive SLAVE.  */
 
-SLAVEOE		= CFGIN & MATCH & dataspace & FCS & !RST;
+/* SHUTUP must block SLAVE generation */
 
 SLAVE		= 'b'1;
-SLAVE.OE	= SLAVEOE;
+SLAVE.OE	= !SHUTUP & CFGIN & MATCH & dataspace & FCS & !RST;
 
 /* The cache should be inhibited for any access to the board.  Actually, it
    doesn't matter if we cache ROM, but there's no reason to since its not
    execute-in-place ROM so no performance is lost making it uncached too. */
 
-CINH		= SLAVE;
-CINH.OE		= SLAVE;
+/* SHUTUP must block CINH generation */
+
+CINH		= 'b'1;
+CINH.OE		= !SHUTUP & CFGIN & MATCH & dataspace & FCS & !RST;
 
 /* This signal partially qualifies the decode for interrupt response cycles.
    We want to respond to INT2, of course in CPU space only.  The rest of
    the decode takes place in U203, including the real A1. */
 
-INTSPC		= CFGIN & CFGOUT & FC0 & FC1 & !RST & !A3 & A2;
+/* SHUTUP must block INTSPC generation */
+
+INTSPC		= !SHUTUP & CFGIN & CFGOUT & FC0 & FC1 & !RST & !A3 & A2;
+INTSPC.OE	= 'b'1;
+
 
