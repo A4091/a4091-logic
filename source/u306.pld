@@ -125,8 +125,7 @@ DTSYNC.AR	= !BFCS;
    NCR 53C710 wants the effect of SLACK (which makes a DTACK on slave
    to SCSI cycles) reflected on STERM to actually end the cycle. */
 
-STERM.D		= !RST &  MYBUS & BFCS & DTSYNC & !STERM & BDTACK
-		# !RST & !MYBUS & BFCS & BDTACK & !STERM;
+STERM.D		= !RST & BFCS & BDTACK & !STERM;
 STERM.AR	= !BFCS;
 
 /* We _never_ issue a CBACK, since BURST isn't supported. */
