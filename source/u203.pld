@@ -106,9 +106,8 @@ intcyc		= INTSPC & FC2 & A19 & A18 & A17 & !A1 & READ;
 ROM		= cpucyc & SLAVE & READ & addr:[7fffff..000000]
 		# ROM & SLAVE;
 
-/* SCSI and NET selects are very straight-forward.  AT LEAST two SCSI
-   images are defined here, it's probably reasonable to use the first
-   two only. */
+/* SCSI selects are very straight-forward.  AT LEAST two SCSI images
+   are defined here, it's probably reasonable to use the first two only. */
 
 SCSI		= cpucyc & SLAVE & addr:[87ffff..800000];
 

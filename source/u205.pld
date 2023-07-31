@@ -50,7 +50,7 @@ PIN 8		= !NOZ3		;	/* Get off the Z3 bus? */
 PIN 9		=  INTREG	;	/* Interrupt register access. */
 PIN 10		= !INTVEC	;	/* Interrupt vector access. */
 PIN 11		= !CFGOUT	;	/* Configuration chain output. */
-PIN 13		= !NACK		;	/* Network chip acknowledge. */
+PIN 13		= !NACK		;	/* ROM acknowledge. */
 PIN 14		= !MTCR		;	/* Zorro III burst strobe. */
 PIN 15		= !MASTER	;	/* SCSI chip owns the A4091 bus. */
 PIN 16		= !SID    	;	/* SCSI ID. */
@@ -129,7 +129,7 @@ ABOEH.AR	= NOZ3;
 
 /* The board needs to generate a DTACK here for slave accesses.  Most
    of the slave terminations are very simple, since they're either
-   based on a termination signal (SLACK for SCSI, NACK for net or ROM)
+   based on a termination signal (SLACK for SCSI, NACK for ROM)
    or they're instant (interrupt vector R/W).  During configuration,
    any write should also be instantly terminated, that would be a
    configuration register write (reads are governed by ROM access). */
