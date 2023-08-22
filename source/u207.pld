@@ -1,4 +1,4 @@
-	PARTNO		381584-01 ;
+	PARTNO		381584-02 ;
 	NAME		U207 ;
 	DATE		January 14, 1993 ;
 	REV		2 ;
@@ -21,7 +21,7 @@
 /*									*/
 /*	Device:		22V10-15					*/
 /*	Clock:		CLK (25MHz)					*/
-/*	Unused:		2(I),3(I),4(I),14(IO),21(IO)			*/
+/*	Unused:		2(I),3(I),4(I),14(IO),15(IO),16(IO),21(IO)	*/
 /*									*/
 /************************************************************************/
 /*									*/
@@ -55,16 +55,14 @@ PIN 23		= !INT2		;	/* Zorro bus interrupt 2. */
 
 /** USED INTERNALLY: **/
 
-PIN 15		= !NS3		;	/* ROM access counter. */
-PIN 17		= !NS2		;
-PIN 18		= !NS1		;
+PIN 18		= !NS1		;	/* ROM access counter. */
 PIN 19		= !NS0		;
 
 /** INTERNAL TERMS: **/
 
 /* The state vector */
 
-field state	= [NS3..0];
+field state	= [NS1..0];
 
 /* Start and continue terms. */
 
@@ -96,20 +94,15 @@ NS0.D		= !RST & startcnt & !NS0;
 NS1.D		= !RST & !stopcnt & NS0 & !NS1
 		# !RST & !stopcnt & !NS0 &  NS1;
 
-NS2.D		= !RST & !stopcnt &  NS0 &  NS1 & !NS2
-		# !RST & !stopcnt & !NS0 &         NS2
-		# !RST & !stopcnt &        !NS1 &  NS2;
-
-NS3.D		= !RST & !stopcnt &  NS0 &  NS1 &  NS2 & !NS3
-		# !RST & !stopcnt &  NS3;
-
-[NS3..0].AR	= RST;
+[NS1..0].AR	= RST;
 
 /* The ROM termination signal is set up to handle pretty much any kind
-   of ROM, since we only read the ROM for initialization.  Assuming a
-   cycle time of 400ns at 25MHz, we need to count 10 states. */
+   of ROM, since we only read the ROM for initialization.  The original
+   code assumed an access time of 400ns. At 25MHz this required 10
+   cycles. Most available parts, like the W27C512-45Z, are significantly
+   faster than even 120ns, so choose 120ns, counting 3 states. */
 
-NACK		=  ROM & state:a
+NACK		=  ROM & state:3
 		# NACK & FCS & !RST;
 NACK.AR		= RST;
 
