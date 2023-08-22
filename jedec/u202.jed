@@ -1,7 +1,7 @@
 
 CUPL(WM)        5.0a  Serial# MW-10400000
 Device          g22v10  Library DLIB-h-40-1
-Created         Mon May 29 17:11:47 2023
+Created         Mon May 29 23:09:49 2023
 Name            U202 
 Partno          391583-02 
 Revision        0 
@@ -48,4 +48,4 @@ Location        West Chester
 *L05824 01010011001100111001001100010011
 *L05856 01010011100000110011001011010011
 *C5F65
-*585A
+*5860
