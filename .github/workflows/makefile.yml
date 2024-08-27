@@ -23,5 +23,5 @@ jobs:
       with:
         name: A4091 Logic Artifacts
         path: |
-	  ${{ github.workspace }}/jedec/u*.jed
-	  ${{ github.workspace }}/source/u*.pld
+          ${{ github.workspace }}/jedec/u*.jed
+          ${{ github.workspace }}/source/u*.pld
