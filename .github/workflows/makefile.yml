@@ -19,11 +19,10 @@ jobs:
       run: make
 
     - name: List PLD files
-      run: ls -alh ${{ github.workspace }}/source/u*.pld
+      run: ls -alh source/u*.pld
 
     - name: Create zip
       run: |
-        cd ${{ github.workspace }}
         zip -r A4091_Logic_Artifacts.zip jedec/ source/
 
     - name: Upload zipped artifacts
