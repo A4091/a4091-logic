@@ -1,4 +1,4 @@
-name: A4091 software CI
+name: A4091 Logic CI
 
 on:
   push:
@@ -21,6 +21,7 @@ jobs:
     - name: Archive CI artifacts (JED)
       uses: actions/upload-artifact@v4
       with:
-          name: A4091 JEDEC files
-          path: ${{ github.workspace }}/jedec/u*.jed
-
+          name: A4091 Logic Artifacts
+          path: |
+	    ${{ github.workspace }}/jedec/u*.jed
+	    ${{ github.workspace }}/source/u*.pld
