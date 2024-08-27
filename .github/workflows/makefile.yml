@@ -21,13 +21,22 @@ jobs:
     - name: List PLD files
       run: ls -alh source/u*.pld
 
-    - name: Create zip
-      run: |
-        tar -cvzf A4091_Logic_Artifacts.tar.gz jedec/ source/
+    - name: Create tar.gz archive
+      run: tar -cvzf A4091_Logic_Artifacts.tar.gz jedec/ source/
 
-    - name: Upload tar.gz artifacts
+    - name: Upload tar.gz artifact
       uses: actions/upload-artifact@v4
       with:
         name: A4091 Logic Artifacts
         path: A4091_Logic_Artifacts.tar.gz
+
+    - name: Download the tar.gz artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: A4091 Logic Artifacts
+        path: .
+
+    - name: Verify tar.gz file
+      run: |
+        ls -alh A4091_Logic_Artifacts.tar.gz
 
