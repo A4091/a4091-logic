@@ -18,10 +18,10 @@ jobs:
     - name: Build JEDEC files
       run: make
 
-    - name: Archive CI artifacts (JED)
+    - name: Archive CI artifacts (JED and PLD)
       uses: actions/upload-artifact@v4
       with:
-          name: A4091 Logic Artifacts
-          path: |
-	    ${{ github.workspace }}/jedec/u*.jed
-	    ${{ github.workspace }}/source/u*.pld
+        name: A4091 Logic Artifacts
+        path: |
+	  ${{ github.workspace }}/jedec/u*.jed
+	  ${{ github.workspace }}/source/u*.pld
