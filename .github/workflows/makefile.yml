@@ -18,10 +18,17 @@ jobs:
     - name: Build JEDEC files
       run: make
 
-    - name: Archive CI artifacts (JED and PLD)
+    - name: List PLD files
+      run: ls -alh ${{ github.workspace }}/source/u*.pld
+
+    - name: Create zip
+      run: |
+        cd ${{ github.workspace }}
+        zip -r A4091_Logic_Artifacts.zip jedec/ source/
+
+    - name: Upload zipped artifacts
       uses: actions/upload-artifact@v4
       with:
         name: A4091 Logic Artifacts
-        path: |
-          ${{ github.workspace }}/jedec/u*.jed
-          ${{ github.workspace }}/source/u*.pld
+        path: A4091_Logic_Artifacts.zip
+
