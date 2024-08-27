@@ -1,0 +1,28 @@
+name: A4091 software CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container: stefanreinauer/wincupl
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+
+    - name: Build JEDEC files
+      run: make
+
+    - name: Archive CI artifacts (JED)
+      uses: actions/upload-artifact@v4
+      with:
+          name: A4091 JEDEC files
+          path: ${{ github.workspace }}/jedec/u*.jed
+
