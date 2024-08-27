@@ -23,11 +23,11 @@ jobs:
 
     - name: Create zip
       run: |
-        zip -r A4091_Logic_Artifacts.zip jedec/ source/
+        tar -cvzf A4091_Logic_Artifacts.tar.gz jedec/ source/
 
-    - name: Upload zipped artifacts
+    - name: Upload tar.gz artifacts
       uses: actions/upload-artifact@v4
       with:
         name: A4091 Logic Artifacts
-        path: A4091_Logic_Artifacts.zip
+        path: A4091_Logic_Artifacts.tar.gz
 
