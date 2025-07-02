@@ -53,9 +53,10 @@ for U205. All the remaining chips should be Atmel ATF22V10-10.
 
 ### Using the latest version of logic files
 
-When using the latest versions of the logic files in this repository, you
-should be fine when using all Atmel ATF22V10-10 parts.
+We still recommend the same GAL configuration as with the original logic files.
+While some issues have been mitigated, some signals are impacted by Atmel's
+pinkeepers that make an all Atmel implementation highly likely to fail due to
+the voltage drop observed on these signals.
 
-There will also be a speedup of approximately 14% over the original GAL set.
-
+There is a speedup of approximately 14% over the original GAL set.
 
